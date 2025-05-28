@@ -1,5 +1,4 @@
 # 🎰 Casino 🎰
-
 The main application where you can log in, access the individual games and compete with others.
 
 ## Planning
