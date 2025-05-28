@@ -5,6 +5,9 @@ The main application where you can log in, access the individual games and compe
 ## Planning
 
 ### Architecture
+- Main Frontend: SvelteKit
+- Backend: Go server
+- Communication with Backend: WebSocket + REST
 
 ### Features
 
