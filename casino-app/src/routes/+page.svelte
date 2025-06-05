@@ -1,2 +1,23 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<script lang="ts">
+</script>
+
+<svelte:head>
+    <title>JHGambling</title>
+</svelte:head>
+
+<div class="app">
+
+</div>
+
+<style lang="scss">
+    .app {
+        width: 100vw;
+        height: 100vh;
+
+        position: fixed;
+        top: 0;
+        left: 0;
+
+        background-color: #1f1d1c;
+    }
+</style>
