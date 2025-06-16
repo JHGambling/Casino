@@ -19,7 +19,14 @@ export class CasinoClient {
 
     public async connect() {
         this.socket.connect();
+        await this.waitForConnect();
 
+        if (await this.auth.authFromLocalStorage()) {
+            console.log("Authenticated from local storage!");
+        }
+    }
+
+    private async waitForConnect() {
         await new Promise<void>((resolve) => {
             if (this.socket.getStatus() === ConnectionStatus.CONNECTED) {
                 resolve();

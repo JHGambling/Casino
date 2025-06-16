@@ -15,6 +15,15 @@ export class Auth {
 
     constructor(private client: CasinoClient) {}
 
+    public async authFromLocalStorage(): Promise<boolean> {
+        let token = localStorage.getItem("casino-token");
+        if (token) {
+            return this.authenticate(token);
+        } else {
+            return false;
+        }
+    }
+
     public async register(
         username: string,
         password: string,
@@ -78,6 +87,7 @@ export class Auth {
             this.isAuthenticated = true;
             this.authenticatedAs = response.userID;
             this.authenticationExpiresAt = new Date(response.expiresAt);
+            localStorage.setItem("casino-token", token);
             return true;
         } else {
             return false;
