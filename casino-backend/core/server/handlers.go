@@ -10,7 +10,7 @@ import (
 func (packet *AuthRegisterPacket) Handle(wsPacket WebsocketPacket, ctx *HandlerContext) {
 	_, exists, _ := ctx.Database.GetUserByUsername(packet.Username)
 
-	if !exists {
+	if exists {
 		if res, err := BuildPacket("auth/register:res", AuthRegisterResponsePacket{
 			ResponsePacket:    ResponsePacket{Success: false, Status: "failed", Message: "User already exists!"},
 			UserAlreadyExists: true,
@@ -85,5 +85,38 @@ func (packet *AuthAuthenticatePacket) Handle(wsPacket WebsocketPacket, ctx *Hand
 			wsPacket.Nonce); err == nil {
 			ctx.Client.Send(res)
 		}
+	}
+}
+
+func (packet *AuthLoginPacket) Handle(wsPacket WebsocketPacket, ctx *HandlerContext) {
+	user, exists, _ := ctx.Database.GetUserByUsername(packet.Username)
+
+	if !exists {
+		if res, err := BuildPacket("auth/login:res", AuthLoginResponsePacket{
+			ResponsePacket:   ResponsePacket{Success: false, Status: "failed", Message: "User not found!"},
+			UserDoesNotExist: true,
+		}, wsPacket.Nonce); err == nil {
+			ctx.Client.Send(res)
+		}
+		return
+	}
+
+	// Generate authentication token
+	token, err := ctx.Auth.CreateTokenForUser(user.ID)
+
+	var response AuthLoginResponsePacket
+	if err != nil {
+		response = AuthLoginResponsePacket{
+			ResponsePacket: ResponsePacket{Success: false, Status: "failed", Message: fmt.Sprintf("internal error: %v", err)},
+		}
+	} else {
+		response = AuthLoginResponsePacket{
+			ResponsePacket: ResponsePacket{Success: true, Status: "ok"},
+			Token:          token,
+		}
+	}
+
+	if res, err := BuildPacket("auth/login:res", response, wsPacket.Nonce); err == nil {
+		ctx.Client.Send(res)
 	}
 }

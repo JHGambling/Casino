@@ -23,7 +23,8 @@ type AuthLoginPacket struct {
 }
 type AuthLoginResponsePacket struct {
 	ResponsePacket
-	Token string `json:"token,omitempty"`
+	UserDoesNotExist bool   `json:"userDoesNotExist"`
+	Token            string `json:"token,omitempty"`
 }
 
 type AuthAuthenticatePacket struct {
@@ -33,11 +34,4 @@ type AuthAuthenticateResponsePacket struct {
 	ResponsePacket
 	UserID    uint  `json:"userID"`
 	ExpiresAt int64 `json:"expiresAt"`
-}
-
-type AuthValidatePacket struct {
-	Token string `json:"token"`
-}
-type AuthValidateResponsePacket struct {
-	ResponsePacket
 }

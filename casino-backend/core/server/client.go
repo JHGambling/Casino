@@ -65,6 +65,10 @@ func (gc *GatewayClient) handleIncomingPacket(packet WebsocketPacket) {
 		}
 		break
 	case "auth/login":
+		var payload AuthLoginPacket
+		if gc.unmarshalPayload(packet.Payload, &payload) {
+			payload.Handle(packet, &gc.handlerContext)
+		}
 		break
 	case "auth/authenticate":
 		var payload AuthAuthenticatePacket

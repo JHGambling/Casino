@@ -41,14 +41,14 @@ func (db *Database) GetUserByID(userID uint) (models.UserModel, bool, error) {
 	var user models.UserModel
 	result := db.connection.First(&user, userID)
 
-	return user, errors.Is(result.Error, gorm.ErrRecordNotFound), result.Error
+	return user, !errors.Is(result.Error, gorm.ErrRecordNotFound), result.Error
 }
 
 func (db *Database) GetUserByUsername(username string) (models.UserModel, bool, error) {
 	var user models.UserModel
 	result := db.connection.Where("username = ?", username).First(&user)
 
-	return user, errors.Is(result.Error, gorm.ErrRecordNotFound), result.Error
+	return user, !errors.Is(result.Error, gorm.ErrRecordNotFound), result.Error
 }
 
 func (db *Database) CreateUser(user *models.UserModel) error {
