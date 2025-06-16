@@ -60,7 +60,7 @@ func (s *Server) handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	defer conn.Close()
 
 	// Create a new Gateway client
-	gatewayClient := NewGatewayClient(r.RemoteAddr)
+	gatewayClient := NewGatewayClient(r.RemoteAddr, s.gateway.ctx)
 
 	// Add client to gateway
 	s.gateway.AddClient(gatewayClient)

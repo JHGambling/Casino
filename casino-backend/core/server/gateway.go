@@ -9,12 +9,19 @@ import (
 type Gateway struct {
 	Clients map[string]*GatewayClient
 	mu      sync.Mutex
+
+	ctx GatewayContext
 }
 
-func NewGateway() *Gateway {
-	return &Gateway{
+func NewGateway(ctx GatewayContext) *Gateway {
+	gw := &Gateway{
 		Clients: make(map[string]*GatewayClient),
+		ctx:     ctx,
 	}
+
+	gw.ctx.Gateway = gw
+
+	return gw
 }
 
 // AddClient adds a new GatewayClient to the Gateway
