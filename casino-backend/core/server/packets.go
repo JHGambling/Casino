@@ -13,7 +13,8 @@ type AuthRegisterPacket struct {
 }
 type AuthRegisterResponsePacket struct {
 	ResponsePacket
-	Token string `json:"token,omitempty"`
+	UserAlreadyExists bool   `json:"userAlreadyExists"`
+	Token             string `json:"token,omitempty"`
 }
 
 type AuthLoginPacket struct {
