@@ -1,4 +1,8 @@
-import { ConnectionEvent, ConnectionStatus } from "./types/ws";
+import {
+    ConnectionEvent,
+    ConnectionStatus,
+    RequestTimeoutError,
+} from "./types/ws";
 import { WebsocketPacket } from "./types/packet";
 
 interface WebSocketClientOptions {
@@ -7,6 +11,13 @@ interface WebSocketClientOptions {
     reconnectInterval?: number;
     maxReconnectAttempts?: number;
     debug?: boolean;
+    requestTimeout?: number;
+}
+
+interface PendingRequest {
+    resolve: (packet: WebsocketPacket) => void;
+    reject: (error: Error) => void;
+    timeout: number;
 }
 
 export class WebSocketClient {
@@ -15,6 +26,7 @@ export class WebSocketClient {
     private reconnectAttempts = 0;
     private eventListeners: Map<string, Function[]> = new Map();
     private nextNonce = 1;
+    private pendingRequests: Map<number, PendingRequest> = new Map();
 
     // Configuration
     private url: string;
@@ -22,6 +34,7 @@ export class WebSocketClient {
     private reconnectInterval: number;
     private maxReconnectAttempts: number;
     private debug: boolean;
+    private requestTimeout: number;
 
     constructor(options: WebSocketClientOptions) {
         this.url = options.url;
@@ -29,6 +42,7 @@ export class WebSocketClient {
         this.reconnectInterval = options.reconnectInterval || 1000;
         this.maxReconnectAttempts = options.maxReconnectAttempts || 50;
         this.debug = options.debug || false;
+        this.requestTimeout = options.requestTimeout || 30000; // 30 seconds default
     }
 
     /**
@@ -67,6 +81,9 @@ export class WebSocketClient {
         ) {
             this.log("Disconnecting");
 
+            // Reject all pending requests
+            this.rejectAllPendingRequests(new Error("WebSocket disconnected"));
+
             // Prevent auto reconnect when explicitly disconnected
             this.autoReconnect = false;
             this.ws.close();
@@ -90,6 +107,52 @@ export class WebSocketClient {
 
         this.ws!.send(JSON.stringify(packet));
         return nonce;
+    }
+
+    /**
+     * Send a packet and wait for a response with matching nonce
+     */
+    public async request(
+        type: string,
+        payload: any = {},
+        timeout?: number,
+    ): Promise<WebsocketPacket> {
+        if (this.status !== ConnectionStatus.CONNECTED) {
+            throw new Error("Cannot send request: WebSocket is not connected");
+        }
+
+        const nonce = this.getNextNonce();
+        const packet: WebsocketPacket = {
+            type,
+            payload,
+            nonce,
+        };
+
+        return new Promise((resolve, reject) => {
+            const timeoutMs = timeout || this.requestTimeout;
+
+            // Set up timeout
+            const timeoutHandle = setTimeout(() => {
+                this.pendingRequests.delete(nonce);
+                reject(
+                    new RequestTimeoutError(
+                        `Request timeout after ${timeoutMs}ms`,
+                        nonce,
+                    ),
+                );
+            }, timeoutMs);
+
+            // Store the pending request
+            this.pendingRequests.set(nonce, {
+                resolve,
+                reject,
+                timeout: timeoutHandle,
+            });
+
+            // Send the packet
+            this.ws!.send(JSON.stringify(packet));
+            this.log(`Sent request with nonce ${nonce}`, packet);
+        });
     }
 
     /**
@@ -155,6 +218,11 @@ export class WebSocketClient {
             const wasConnected = this.status === ConnectionStatus.CONNECTED;
             this.status = ConnectionStatus.DISCONNECTED;
 
+            // Reject all pending requests when connection closes
+            this.rejectAllPendingRequests(
+                new Error("WebSocket connection closed"),
+            );
+
             if (wasConnected) {
                 this.log("Connection closed");
                 this.emit(ConnectionEvent.DISCONNECTED);
@@ -182,6 +250,24 @@ export class WebSocketClient {
         try {
             const packet = JSON.parse(event.data) as WebsocketPacket;
             this.log("Received packet", packet);
+
+            // Check if this is a response to a pending request
+            if (packet.nonce && this.pendingRequests.has(packet.nonce)) {
+                const pendingRequest = this.pendingRequests.get(packet.nonce)!;
+
+                // Clear the timeout
+                clearTimeout(pendingRequest.timeout);
+
+                // Remove from pending requests
+                this.pendingRequests.delete(packet.nonce);
+
+                // Resolve the promise
+                pendingRequest.resolve(packet);
+
+                this.log(`Resolved request with nonce ${packet.nonce}`);
+            }
+
+            // Always emit the message event for other listeners
             this.emit(ConnectionEvent.MESSAGE, packet);
         } catch (error) {
             this.log("Error parsing message", error);
@@ -239,6 +325,17 @@ export class WebSocketClient {
      */
     private getNextNonce(): number {
         return this.nextNonce++;
+    }
+
+    /**
+     * Reject all pending requests with the given error
+     */
+    private rejectAllPendingRequests(error: Error): void {
+        for (const [nonce, pendingRequest] of this.pendingRequests) {
+            clearTimeout(pendingRequest.timeout);
+            pendingRequest.reject(error);
+        }
+        this.pendingRequests.clear();
     }
 
     /**

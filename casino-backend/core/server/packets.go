@@ -7,9 +7,9 @@ type ResponsePacket struct {
 }
 
 type AuthRegisterPacket struct {
-	Username    string `json:"user"`
+	Username    string `json:"username"`
 	DisplayName string `json:"displayName"`
-	Password    string `json:"pass"`
+	Password    string `json:"password"`
 }
 type AuthRegisterResponsePacket struct {
 	ResponsePacket
@@ -18,8 +18,8 @@ type AuthRegisterResponsePacket struct {
 }
 
 type AuthLoginPacket struct {
-	Username string `json:"user"`
-	Password string `json:"pass"`
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 type AuthLoginResponsePacket struct {
 	ResponsePacket

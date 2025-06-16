@@ -5,9 +5,7 @@
     <title>JHGambling</title>
 </svelte:head>
 
-<div class="app">
-
-</div>
+<div class="app"></div>
 
 <style lang="scss">
     .app {
@@ -18,6 +16,16 @@
         top: 0;
         left: 0;
 
-        background-color: #1f1d1c;
+        background-color: #141312;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .loader {
+        width: 10vw;
+        height: 10vw;
     }
 </style>

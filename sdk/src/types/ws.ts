@@ -22,3 +22,20 @@ export type ConnectionEventCallback = () => void;
 export type MessageEventCallback = (packet: WebsocketPacket) => void;
 export type ErrorEventCallback = (error: Error) => void;
 export type ReconnectingEventCallback = (attemptNumber: number) => void;
+
+// Request timeout error
+export class RequestTimeoutError extends Error {
+    constructor(
+        message: string,
+        public readonly nonce: number,
+    ) {
+        super(message);
+        this.name = "RequestTimeoutError";
+    }
+}
+
+// Request configuration
+export interface RequestOptions {
+    timeout?: number;
+    retries?: number;
+}
