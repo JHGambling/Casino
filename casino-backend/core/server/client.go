@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"jhgambling/backend/core/utils"
+	"time"
 )
 
 type GatewayClient struct {
@@ -12,6 +13,10 @@ type GatewayClient struct {
 	OutgoingChan chan []byte // Channel for messages going to WebSocket
 
 	handlerContext HandlerContext
+
+	isAuthenticated         bool
+	authenticatedAs         uint
+	authenticationExpriesAt time.Time
 }
 
 func NewGatewayClient(addr string, ctx GatewayContext) *GatewayClient {
@@ -62,6 +67,10 @@ func (gc *GatewayClient) handleIncomingPacket(packet WebsocketPacket) {
 	case "auth/login":
 		break
 	case "auth/authenticate":
+		var payload AuthAuthenticatePacket
+		if gc.unmarshalPayload(packet.Payload, &payload) {
+			payload.Handle(packet, &gc.handlerContext)
+		}
 		break
 	default:
 		utils.Log("warn", "casino::gateway", "unknown packet type: ", packet.Type)
@@ -75,4 +84,20 @@ func (gc *GatewayClient) unmarshalPayload(payload json.RawMessage, v any) bool {
 		return false
 	}
 	return true
+}
+
+func (gc *GatewayClient) IsAuthenticated() bool {
+	return gc.isAuthenticated && time.Now().Unix() < gc.authenticationExpriesAt.Unix()
+}
+
+func (gc *GatewayClient) Authenticate(userID uint, expiresAt time.Time) {
+	gc.isAuthenticated = true
+	gc.authenticatedAs = userID
+	gc.authenticationExpriesAt = expiresAt
+}
+
+func (gc *GatewayClient) RevokeAuthentication() {
+	gc.isAuthenticated = false
+	gc.authenticatedAs = 0
+	gc.authenticationExpriesAt = time.UnixMicro(0)
 }

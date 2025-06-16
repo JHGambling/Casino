@@ -31,6 +31,8 @@ type AuthAuthenticatePacket struct {
 }
 type AuthAuthenticateResponsePacket struct {
 	ResponsePacket
+	UserID    uint  `json:"userID"`
+	ExpiresAt int64 `json:"expiresAt"`
 }
 
 type AuthValidatePacket struct {

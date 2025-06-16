@@ -59,3 +59,31 @@ func (packet *AuthRegisterPacket) Handle(wsPacket WebsocketPacket, ctx *HandlerC
 		ctx.Client.Send(res)
 	}
 }
+
+func (packet *AuthAuthenticatePacket) Handle(wsPacket WebsocketPacket, ctx *HandlerContext) {
+	valid, userID, expiresAt := ctx.Auth.VerifyToken(packet.Token)
+
+	if valid {
+		ctx.Client.Authenticate(userID, expiresAt)
+		// Send response
+		if res, err := BuildPacket("auth/authenticate:res",
+			AuthAuthenticateResponsePacket{
+				ResponsePacket: ResponsePacket{Success: true, Status: "ok"},
+				UserID:         userID,
+				ExpiresAt:      expiresAt.UnixMilli(),
+			},
+			wsPacket.Nonce); err == nil {
+			ctx.Client.Send(res)
+		}
+	} else {
+		ctx.Client.RevokeAuthentication()
+		// Send response
+		if res, err := BuildPacket("auth/authenticate:res",
+			AuthAuthenticateResponsePacket{
+				ResponsePacket: ResponsePacket{Success: false, Status: "failed", Message: "invalid token"},
+			},
+			wsPacket.Nonce); err == nil {
+			ctx.Client.Send(res)
+		}
+	}
+}
