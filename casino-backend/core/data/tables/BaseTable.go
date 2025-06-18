@@ -1,6 +1,8 @@
 package tables
 
 import (
+	"jhgambling/backend/core/data/models"
+
 	"gorm.io/gorm"
 )
 
@@ -17,12 +19,16 @@ type Table interface {
 	Update(id interface{}, data interface{}) error
 	Delete(id interface{}) error
 
+	// User Operations
+	CreateAsUser(user models.UserModel, data interface{}) error
+	FindByIDAsUser(user models.UserModel, id interface{}) (interface{}, error)
+	FindAllAsUser(user models.UserModel, limit, offset int) ([]interface{}, error)
+	UpdateAsUser(user models.UserModel, id interface{}, data interface{}) error
+	DeleteAsUser(user models.UserModel, id interface{}) error
+
 	// Database interaction
 	SetDB(db *gorm.DB)
 	GetDB() *gorm.DB
-
-	// Permissions
-	HasPermission(userID uint, action string) bool
 }
 
 // BaseTable provides a default implementation of the Table interface
@@ -86,9 +92,32 @@ func (t *BaseTable) Delete(id interface{}) error {
 	return t.DB.Delete(t.GetModelType(), id).Error
 }
 
-// HasPermission checks if a user has permission to perform an action
-// This is a default implementation that allows everything
-// It should be overridden by specific tables to implement permission rules
-func (t *BaseTable) HasPermission(userID uint, action string) bool {
-	return true
+// CreateAsUser creates a new record with user permission check
+func (t *BaseTable) CreateAsUser(user models.UserModel, data interface{}) error {
+	// Add Permission check
+	return t.Create(data)
+}
+
+// FindByIDAsUser retrieves a record by ID with user permission check
+func (t *BaseTable) FindByIDAsUser(user models.UserModel, id interface{}) (interface{}, error) {
+	// Add Permission check
+	return t.FindByID(id)
+}
+
+// FindAllAsUser retrieves multiple records with pagination and user permission check
+func (t *BaseTable) FindAllAsUser(user models.UserModel, limit, offset int) ([]interface{}, error) {
+	// Add Permission check
+	return t.FindAll(limit, offset)
+}
+
+// UpdateAsUser modifies an existing record with user permission check
+func (t *BaseTable) UpdateAsUser(user models.UserModel, id interface{}, data interface{}) error {
+	// Add Permission check
+	return t.Update(id, data)
+}
+
+// DeleteAsUser removes a record with user permission check
+func (t *BaseTable) DeleteAsUser(user models.UserModel, id interface{}) error {
+	// Add Permission check
+	return t.Delete(id)
 }

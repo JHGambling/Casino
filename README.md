@@ -5,7 +5,7 @@ The main application where you can log in, access the individual games and compe
 
 ### Architecture
 - Main Frontend: SvelteKit
-- Backend: Go
+- Backend: Go + Sqlite
 
 ### Features
 

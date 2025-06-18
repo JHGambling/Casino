@@ -13,4 +13,5 @@ type UserModel struct {
 	DisplayName  string
 	PasswordHash string
 	JoinedAt     time.Time
+	IsAdmin      bool
 }

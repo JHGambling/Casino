@@ -1,16 +1,20 @@
 package server
 
 import (
+	"errors"
 	"fmt"
 	"jhgambling/backend/core/data/models"
 	"jhgambling/backend/core/utils"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 func (packet *AuthRegisterPacket) Handle(wsPacket WebsocketPacket, ctx *HandlerContext) {
-	_, exists, _ := ctx.Database.GetUserByUsername(packet.Username)
+	_, err := ctx.Database.GetUserTable().FindByUsername(packet.Username)
 
-	if exists {
+	if err == nil {
+		// FindByUsername succeeded -> User already exists
 		if res, err := BuildPacket("auth/register:res", AuthRegisterResponsePacket{
 			ResponsePacket:    ResponsePacket{Success: false, Status: "failed", Message: "User already exists!"},
 			UserAlreadyExists: true,
@@ -18,6 +22,16 @@ func (packet *AuthRegisterPacket) Handle(wsPacket WebsocketPacket, ctx *HandlerC
 			ctx.Client.Send(res)
 		}
 		return
+	} else {
+		// FindByUsername failed -> Send error response if the error is not about the record not existing
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			if res, err2 := BuildPacket("auth/register:res", AuthRegisterResponsePacket{
+				ResponsePacket:    ResponsePacket{Success: false, Status: "failed", Message: "internal error: " + err.Error()},
+				UserAlreadyExists: true,
+			}, wsPacket.Nonce); err2 == nil {
+				ctx.Client.Send(res)
+			}
+		}
 	}
 
 	// Username is available -> continue
@@ -29,7 +43,7 @@ func (packet *AuthRegisterPacket) Handle(wsPacket WebsocketPacket, ctx *HandlerC
 		JoinedAt:     time.Now(),
 	}
 
-	ctx.Database.CreateUser(&user)
+	ctx.Database.GetUserTable().Create(user)
 	utils.Log("ok", "casino::gateway",
 		"new user registered: ",
 		fmt.Sprintf(
@@ -89,9 +103,9 @@ func (packet *AuthAuthenticatePacket) Handle(wsPacket WebsocketPacket, ctx *Hand
 }
 
 func (packet *AuthLoginPacket) Handle(wsPacket WebsocketPacket, ctx *HandlerContext) {
-	user, exists, _ := ctx.Database.GetUserByUsername(packet.Username)
+	user, err := ctx.Database.GetUserTable().FindByUsername(packet.Username)
 
-	if !exists {
+	if err != nil {
 		if res, err := BuildPacket("auth/login:res", AuthLoginResponsePacket{
 			ResponsePacket:   ResponsePacket{Success: false, Status: "failed", Message: "User not found!"},
 			UserDoesNotExist: true,

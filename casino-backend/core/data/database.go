@@ -69,70 +69,54 @@ func (db *Database) GetTable(tableID string) (tables.Table, error) {
 }
 
 // GetUserTable returns the user table if registered, or creates a default one
-func (db *Database) GetUserTable() (*tables.UserTable, error) {
+func (db *Database) GetUserTable() *tables.UserTable {
 	table, err := db.registry.Get("users")
 	if err != nil {
-		// Create a default user table if not registered
-		userTable := tables.NewUserTable()
-		userTable.SetDB(db.connection)
-		err = db.registry.Register(userTable)
-		if err != nil {
-			return nil, err
-		}
-		return userTable, nil
+		panic("user table does not exist")
 	}
 
 	userTable, ok := table.(*tables.UserTable)
 	if !ok {
-		return nil, errors.New("registered users table is not of type UserTable")
+		panic("invalid user table")
 	}
 
-	return userTable, nil
+	return userTable
 }
 
-// Backward compatibility methods that use the user table
-
-func (db *Database) GetUserByID(userID uint) (models.UserModel, bool, error) {
-	userTable, err := db.GetUserTable()
-	if err != nil {
-		return models.UserModel{}, false, err
-	}
-
-	user, err := userTable.FindByID(userID)
-	if err != nil {
-		return models.UserModel{}, false, err
-	}
-
-	userModel, ok := user.(*models.UserModel)
-	if !ok {
-		return models.UserModel{}, false, errors.New("invalid user model type")
-	}
-
-	return *userModel, true, nil
+// GetTableAsUser gets a registered table with added type safety for AsUser operations
+func (db *Database) GetTableAsUser(tableID string) (tables.Table, error) {
+	return db.registry.Get(tableID)
 }
 
-func (db *Database) GetUserByUsername(username string) (models.UserModel, bool, error) {
-	userTable, err := db.GetUserTable()
+// PerformOperationAsUser performs a generic table operation as an authenticated user
+func (db *Database) PerformOperationAsUser(authenticatedUser models.UserModel, tableID string,
+	operation string, id interface{}, data interface{}) (interface{}, error) {
+
+	table, err := db.GetTableAsUser(tableID)
 	if err != nil {
-		return models.UserModel{}, false, err
+		return nil, err
 	}
 
-	user, err := userTable.FindByUsername(username)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return models.UserModel{}, false, nil
+	switch operation {
+	case "create":
+		return nil, table.CreateAsUser(authenticatedUser, data)
+	case "findById":
+		return table.FindByIDAsUser(authenticatedUser, id)
+	case "findAll":
+		limit, ok := id.(int)
+		if !ok {
+			limit = 10
 		}
-		return models.UserModel{}, false, err
+		offset, ok := data.(int)
+		if !ok {
+			offset = 0
+		}
+		return table.FindAllAsUser(authenticatedUser, limit, offset)
+	case "update":
+		return nil, table.UpdateAsUser(authenticatedUser, id, data)
+	case "delete":
+		return nil, table.DeleteAsUser(authenticatedUser, id)
+	default:
+		return nil, errors.New("unknown operation")
 	}
-
-	return *user, true, nil
-}
-
-func (db *Database) CreateUser(user *models.UserModel) error {
-	userTable, err := db.GetUserTable()
-	if err != nil {
-		return err
-	}
-
-	return userTable.Create(user)
 }
