@@ -5,12 +5,12 @@ The main application where you can log in, access the individual games and compe
 
 ### Architecture
 - Main Frontend: SvelteKit
-- Backend: Pocketbase extended with Go
+- Backend: Go
 
 ### Features
 
 - [ ] User Login
-- [ ] Casino Map
+- [ ] Game List / Casino Map
 - [ ] Embedding Games (using iframes maybe?)
 - [ ] Money / Wallet System
 - [ ] Net Worth Leaderboard
