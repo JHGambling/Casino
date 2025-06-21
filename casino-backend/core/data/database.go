@@ -33,6 +33,8 @@ func (db *Database) Connect() {
 
 	db.connection = connection
 	utils.Log("ok", "casino::data", "connected to db")
+
+	db.RegisterDefaultTables()
 }
 
 func (db *Database) Migrate() {
@@ -41,7 +43,6 @@ func (db *Database) Migrate() {
 
 	if len(registeredTables) == 0 {
 		// If no tables are registered, fall back to direct model migration
-		db.connection.AutoMigrate(&models.UserModel{})
 	} else {
 		// Migrate models from registered tables
 		for _, table := range registeredTables {
@@ -53,6 +54,15 @@ func (db *Database) Migrate() {
 	}
 
 	utils.Log("ok", "casino::data", "migrated all models")
+}
+
+func (db *Database) RegisterDefaultTables() {
+	utils.Log("info", "casino::data", "registering default tables...")
+
+	if err := db.RegisterTable(tables.NewUserTable()); err != nil {
+		utils.Log("error", "casino::data", "error registering users table:", err)
+		panic("failed to register default tables")
+	}
 }
 
 // RegisterTable registers a table with the database
@@ -72,7 +82,7 @@ func (db *Database) GetTable(tableID string) (tables.Table, error) {
 func (db *Database) GetUserTable() *tables.UserTable {
 	table, err := db.registry.Get("users")
 	if err != nil {
-		panic("user table does not exist")
+		panic("user table does not exist: " + err.Error())
 	}
 
 	userTable, ok := table.(*tables.UserTable)

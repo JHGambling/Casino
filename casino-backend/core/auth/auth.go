@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthManager struct {
@@ -60,4 +61,16 @@ func (auth *AuthManager) VerifyToken(tokenString string) (bool, uint, time.Time)
 	}
 
 	return true, uint(subjectID), time.Unix(int64(exp), 0)
+}
+
+// Reference: https://gowebexamples.com/password-hashing/
+
+func (auth *AuthManager) HashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	return string(bytes), err
+}
+
+func (auth *AuthManager) CheckPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
 }

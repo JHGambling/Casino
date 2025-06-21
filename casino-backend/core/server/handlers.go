@@ -36,14 +36,34 @@ func (packet *AuthRegisterPacket) Handle(wsPacket WebsocketPacket, ctx *HandlerC
 
 	// Username is available -> continue
 
-	user := models.UserModel{
+	// Hash the password before storing
+	hash, err := ctx.Auth.HashPassword(packet.Password)
+	if err != nil {
+		if res, err := BuildPacket("auth/register:res", AuthRegisterResponsePacket{
+			ResponsePacket: ResponsePacket{Success: false, Status: "failed", Message: "Error hashing password!"},
+		}, wsPacket.Nonce); err == nil {
+			ctx.Client.Send(res)
+		}
+		return
+	}
+
+	// Create the User record
+	user := &models.UserModel{
 		Username:     packet.Username,
 		DisplayName:  packet.DisplayName,
-		PasswordHash: packet.Password,
+		PasswordHash: hash,
 		JoinedAt:     time.Now(),
 	}
 
-	ctx.Database.GetUserTable().Create(user)
+	err = ctx.Database.GetUserTable().Create(user)
+	if err != nil {
+		if res, err := BuildPacket("auth/register:res", AuthRegisterResponsePacket{
+			ResponsePacket: ResponsePacket{Success: false, Status: "failed", Message: "error creating user entry: " + err.Error()},
+		}, wsPacket.Nonce); err == nil {
+			ctx.Client.Send(res)
+		}
+		return
+	}
 	utils.Log("ok", "casino::gateway",
 		"new user registered: ",
 		fmt.Sprintf(
@@ -116,7 +136,7 @@ func (packet *AuthLoginPacket) Handle(wsPacket WebsocketPacket, ctx *HandlerCont
 	}
 
 	// Check for correct password
-	if user.PasswordHash != packet.Password {
+	if !ctx.Auth.CheckPasswordHash(packet.Password, user.PasswordHash) {
 		response := AuthLoginResponsePacket{
 			ResponsePacket: ResponsePacket{Success: false, Status: "failed", Message: "Wrong password"},
 			WrongPassword:  true,
