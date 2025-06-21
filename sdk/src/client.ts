@@ -1,4 +1,5 @@
 import { Auth } from "./auth";
+import { Database } from "./db";
 import { ConnectionEvent, ConnectionStatus } from "./types/ws";
 import { WebSocketClient } from "./websocket";
 
@@ -6,6 +7,7 @@ export class CasinoClient {
     public socket: WebSocketClient;
 
     public auth: Auth;
+    public db: Database;
 
     constructor(public url: string) {
         this.socket = new WebSocketClient({
@@ -15,6 +17,7 @@ export class CasinoClient {
         });
 
         this.auth = new Auth(this);
+        this.db = new Database(this);
     }
 
     public async connect() {

@@ -105,3 +105,15 @@ func (gc *GatewayClient) RevokeAuthentication() {
 	gc.authenticatedAs = 0
 	gc.authenticationExpriesAt = time.UnixMicro(0)
 }
+
+func (gc *GatewayClient) SendUnauthorizedPacket(nonce uint64) {
+	if res, err := BuildPacket("res",
+		ResponsePacket{
+			Success: false,
+			Status:  "unauthorized",
+			Message: "You have to be authorized to interact",
+		},
+		nonce); err == nil {
+		gc.Send(res)
+	}
+}

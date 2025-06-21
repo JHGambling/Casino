@@ -33,3 +33,17 @@ export type AuthAuthenticateResponsePacket = ResponsePacket & {
     userID: number;
     expiresAt: number;
 };
+
+export type DatabaseOperationPacket = {
+    operation: string;
+    table: string;
+    op_id: any;
+    op_data: any;
+};
+
+export type DatabaseOperationResponsePacket = {
+    op: DatabaseOperationPacket;
+    result: any;
+    err: any;
+    exec_time_us: number;
+};

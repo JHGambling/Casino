@@ -115,6 +115,18 @@ func (packet *AuthLoginPacket) Handle(wsPacket WebsocketPacket, ctx *HandlerCont
 		return
 	}
 
+	// Check for correct password
+	if user.PasswordHash != packet.Password {
+		response := AuthLoginResponsePacket{
+			ResponsePacket: ResponsePacket{Success: false, Status: "failed", Message: "Wrong password"},
+			WrongPassword:  true,
+		}
+		if res, err := BuildPacket("auth/login:res", response, wsPacket.Nonce); err == nil {
+			ctx.Client.Send(res)
+		}
+		return
+	}
+
 	// Generate authentication token
 	token, err := ctx.Auth.CreateTokenForUser(user.ID)
 
@@ -131,6 +143,58 @@ func (packet *AuthLoginPacket) Handle(wsPacket WebsocketPacket, ctx *HandlerCont
 	}
 
 	if res, err := BuildPacket("auth/login:res", response, wsPacket.Nonce); err == nil {
+		ctx.Client.Send(res)
+	}
+}
+
+func (packet *DatabaseOperationPacket) Handle(wsPacket WebsocketPacket, ctx *HandlerContext) {
+	if !ctx.Client.IsAuthenticated() {
+		ctx.Client.SendUnauthorizedPacket(wsPacket.Nonce)
+		return
+	}
+
+	start := time.Now()
+
+	userInterface, err := ctx.Database.GetUserTable().FindByID(ctx.Client.authenticatedAs)
+	if err != nil {
+		response := DatabaseOperationResponsePacket{
+			Op:         *packet,
+			Result:     nil,
+			Error:      err,
+			ExecTimeUs: time.Since(start).Microseconds(),
+		}
+		if res, err := BuildPacket("db/op:res", response, wsPacket.Nonce); err == nil {
+			ctx.Client.Send(res)
+		}
+		return
+	}
+
+	// Convert the interface{} to models.UserModel
+	userModel, ok := userInterface.(*models.UserModel)
+	if !ok {
+		response := DatabaseOperationResponsePacket{
+			Op:         *packet,
+			Result:     nil,
+			Error:      "internal error: invalid user model type",
+			ExecTimeUs: time.Since(start).Microseconds(),
+		}
+		if res, err := BuildPacket("db/op:res", response, wsPacket.Nonce); err == nil {
+			ctx.Client.Send(res)
+		}
+		return
+	}
+
+	// Pass the concrete UserModel to PerformOperationAsUser
+	result, err := ctx.Database.PerformOperationAsUser(*userModel, packet.Table, packet.Operation, packet.OpId, packet.OpData)
+
+	response := DatabaseOperationResponsePacket{
+		Op:     *packet,
+		Result: result,
+		Error:  err,
+
+		ExecTimeUs: time.Since(start).Microseconds(),
+	}
+	if res, err := BuildPacket("db/op:res", response, wsPacket.Nonce); err == nil {
 		ctx.Client.Send(res)
 	}
 }

@@ -6,6 +6,7 @@ type ResponsePacket struct {
 	Message string `json:"message"`
 }
 
+// User registration
 type AuthRegisterPacket struct {
 	Username    string `json:"username"`
 	DisplayName string `json:"displayName"`
@@ -17,6 +18,7 @@ type AuthRegisterResponsePacket struct {
 	Token             string `json:"token,omitempty"`
 }
 
+// User login
 type AuthLoginPacket struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -24,9 +26,11 @@ type AuthLoginPacket struct {
 type AuthLoginResponsePacket struct {
 	ResponsePacket
 	UserDoesNotExist bool   `json:"userDoesNotExist"`
+	WrongPassword    bool   `json:"wrongPassword"`
 	Token            string `json:"token,omitempty"`
 }
 
+// User authenticate
 type AuthAuthenticatePacket struct {
 	Token string `json:"token"`
 }
@@ -34,4 +38,19 @@ type AuthAuthenticateResponsePacket struct {
 	ResponsePacket
 	UserID    uint  `json:"userID"`
 	ExpiresAt int64 `json:"expiresAt"`
+}
+
+// Database operation
+type DatabaseOperationPacket struct {
+	Operation string      `json:"operation"`
+	Table     string      `json:"table"`
+	OpId      interface{} `json:"op_id"`
+	OpData    interface{} `json:"op_data"`
+}
+
+type DatabaseOperationResponsePacket struct {
+	Op         DatabaseOperationPacket `json:"op"`
+	Result     interface{}             `json:"result"`
+	Error      interface{}             `json:"err"`
+	ExecTimeUs int64                   `json:"exec_time_us"`
 }
