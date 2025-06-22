@@ -1,1 +1,5 @@
+# Remove the database from git
 casino.db
+
+# Keep compiled binaries out of git
+games/*.so

@@ -2,6 +2,10 @@ module jhgambling/backend
 
 go 1.23.2
 
+require jhgambling/protocol v0.0.0
+
+replace jhgambling/protocol => ../protocol
+
 require (
 	github.com/fatih/color v1.18.0
 	github.com/golang-jwt/jwt/v5 v5.2.2

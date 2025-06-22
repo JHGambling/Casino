@@ -2,5 +2,6 @@
 
 To start the backend, run the following command:
 ```
-go run casino/main.go
+cd casino
+go run main.go
 ```

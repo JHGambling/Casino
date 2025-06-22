@@ -23,7 +23,7 @@ func NewDatabase() *Database {
 }
 
 func (db *Database) Connect() {
-	connection, err := gorm.Open(sqlite.Open("casino.db"), &gorm.Config{
+	connection, err := gorm.Open(sqlite.Open("../casino.db"), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),
 	})
 	if err != nil {
