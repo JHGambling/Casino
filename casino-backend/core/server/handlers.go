@@ -83,6 +83,7 @@ func (packet *AuthRegisterPacket) Handle(wsPacket WebsocketPacket, ctx *HandlerC
 			ResponsePacket: ResponsePacket{Success: false, Status: "failed", Message: fmt.Sprintf("internal error: %v", err)},
 		}
 	} else {
+		utils.Log("debug", "casino::gateway", "[Auth] user ", user.ID, " with username '", user.Username, "' has registered")
 		response = AuthRegisterResponsePacket{
 			ResponsePacket: ResponsePacket{Success: true, Status: "ok"},
 			Token:          token,
@@ -99,6 +100,7 @@ func (packet *AuthAuthenticatePacket) Handle(wsPacket WebsocketPacket, ctx *Hand
 
 	if valid {
 		ctx.Client.Authenticate(userID, expiresAt)
+		utils.Log("debug", "casino::gateway", "[Auth] user ", userID, " has been authenticated")
 		// Send response
 		if res, err := BuildPacket("auth/authenticate:res",
 			AuthAuthenticateResponsePacket{
@@ -110,6 +112,7 @@ func (packet *AuthAuthenticatePacket) Handle(wsPacket WebsocketPacket, ctx *Hand
 			ctx.Client.Send(res)
 		}
 	} else {
+		utils.Log("debug", "casino::gateway", "[Auth] client failed authentication due to invalid token")
 		ctx.Client.RevokeAuthentication()
 		// Send response
 		if res, err := BuildPacket("auth/authenticate:res",
@@ -156,6 +159,7 @@ func (packet *AuthLoginPacket) Handle(wsPacket WebsocketPacket, ctx *HandlerCont
 			ResponsePacket: ResponsePacket{Success: false, Status: "failed", Message: fmt.Sprintf("internal error: %v", err)},
 		}
 	} else {
+		utils.Log("debug", "casino::gateway", "[Auth] user ", user.ID, " has logged in")
 		response = AuthLoginResponsePacket{
 			ResponsePacket: ResponsePacket{Success: true, Status: "ok"},
 			Token:          token,
