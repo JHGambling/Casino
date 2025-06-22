@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// UserModel represents a user in the system.
 type UserModel struct {
 	gorm.Model
 

@@ -3,24 +3,25 @@ package tables
 import (
 	"fmt"
 	"jhgambling/backend/core/utils"
+	"jhgambling/protocol"
 	"sync"
 )
 
 // TableRegistry manages all registered tables
 type TableRegistry struct {
-	tables map[string]Table
+	tables map[string]protocol.Table
 	mutex  sync.RWMutex
 }
 
 // NewTableRegistry creates a new registry
 func NewTableRegistry() *TableRegistry {
 	return &TableRegistry{
-		tables: make(map[string]Table),
+		tables: make(map[string]protocol.Table),
 	}
 }
 
 // Register adds a table to the registry
-func (r *TableRegistry) Register(table Table) error {
+func (r *TableRegistry) Register(table protocol.Table) error {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
 
@@ -39,7 +40,7 @@ func (r *TableRegistry) Register(table Table) error {
 }
 
 // Get retrieves a registered table by ID
-func (r *TableRegistry) Get(tableID string) (Table, error) {
+func (r *TableRegistry) Get(tableID string) (protocol.Table, error) {
 	r.mutex.RLock()
 	defer r.mutex.RUnlock()
 
@@ -52,11 +53,11 @@ func (r *TableRegistry) Get(tableID string) (Table, error) {
 }
 
 // GetAll returns all registered tables
-func (r *TableRegistry) GetAll() []Table {
+func (r *TableRegistry) GetAll() []protocol.Table {
 	r.mutex.RLock()
 	defer r.mutex.RUnlock()
 
-	tables := make([]Table, 0, len(r.tables))
+	tables := make([]protocol.Table, 0, len(r.tables))
 	for _, table := range r.tables {
 		tables = append(tables, table)
 	}

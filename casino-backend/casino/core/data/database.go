@@ -2,9 +2,10 @@ package data
 
 import (
 	"errors"
-	"jhgambling/backend/core/data/models"
 	"jhgambling/backend/core/data/tables"
 	"jhgambling/backend/core/utils"
+	"jhgambling/protocol"
+	"jhgambling/protocol/models"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -66,7 +67,7 @@ func (db *Database) RegisterDefaultTables() {
 }
 
 // RegisterTable registers a table with the database
-func (db *Database) RegisterTable(table tables.Table) error {
+func (db *Database) RegisterTable(table protocol.Table) error {
 	if db.connection != nil {
 		table.SetDB(db.connection)
 	}
@@ -74,7 +75,7 @@ func (db *Database) RegisterTable(table tables.Table) error {
 }
 
 // GetTable retrieves a registered table by ID
-func (db *Database) GetTable(tableID string) (tables.Table, error) {
+func (db *Database) GetTable(tableID string) (protocol.Table, error) {
 	return db.registry.Get(tableID)
 }
 
@@ -94,7 +95,7 @@ func (db *Database) GetUserTable() *tables.UserTable {
 }
 
 // GetTableAsUser gets a registered table with added type safety for AsUser operations
-func (db *Database) GetTableAsUser(tableID string) (tables.Table, error) {
+func (db *Database) GetTableAsUser(tableID string) (protocol.Table, error) {
 	return db.registry.Get(tableID)
 }
 

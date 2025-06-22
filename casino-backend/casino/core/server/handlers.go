@@ -3,8 +3,8 @@ package server
 import (
 	"errors"
 	"fmt"
-	"jhgambling/backend/core/data/models"
 	"jhgambling/backend/core/utils"
+	"jhgambling/protocol/models"
 	"time"
 
 	"gorm.io/gorm"

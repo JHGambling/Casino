@@ -1,7 +1,7 @@
-package tables
+package protocol
 
 import (
-	"jhgambling/backend/core/data/models"
+	"jhgambling/protocol/models"
 
 	"gorm.io/gorm"
 )

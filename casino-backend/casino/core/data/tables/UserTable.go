@@ -2,7 +2,8 @@ package tables
 
 import (
 	"errors"
-	"jhgambling/backend/core/data/models"
+	"jhgambling/protocol"
+	"jhgambling/protocol/models"
 
 	"gorm.io/gorm"
 )
@@ -18,13 +19,13 @@ type SafeUserModel struct {
 
 // UserTable provides table operations for the UserModel
 type UserTable struct {
-	BaseTable
+	protocol.BaseTable
 }
 
 // NewUserTable creates a new user table
 func NewUserTable() *UserTable {
 	return &UserTable{
-		BaseTable: BaseTable{
+		BaseTable: protocol.BaseTable{
 			ID:    "users",
 			Model: &models.UserModel{},
 		},
