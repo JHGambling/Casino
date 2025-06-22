@@ -21,7 +21,7 @@ var logLevels = map[string]LogLevel{
 	"warn":  {"WRN", color.New(color.FgHiYellow), color.New(color.FgWhite)},
 	"error": {"ERR", color.New(color.FgHiRed), color.New(color.FgWhite)},
 	"fatal": {"FTL", color.New(color.FgHiRed), color.New(color.FgWhite)},
-	"debug": {"DBG", color.New(color.FgMagenta), color.New(color.FgWhite)},
+	"debug": {"DBG", color.New(color.FgHiCyan), color.New(color.FgWhite)},
 }
 
 // Log prints a formatted log message

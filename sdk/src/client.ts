@@ -16,26 +16,31 @@ export class CasinoClient {
             debug: true,
         });
 
+        this.socket.on(ConnectionEvent.CONNECTED, () => {
+            this.onConnect();
+        });
+        this.socket.on(ConnectionEvent.DISCONNECTED, () => {
+            this.onDisconnect();
+        });
+
         this.auth = new Auth(this);
         this.db = new Database(this);
     }
 
     public async connect() {
         this.socket.connect();
-        await this.waitForConnect();
+    }
 
-        if (await this.auth.authFromLocalStorage()) {
-            console.log("Authenticated from local storage!");
+    private async onConnect() {
+        if (!this.auth.isAuthenticated) {
+            console.log("Trying to authenticate from localstorage...");
+            if (await this.auth.authFromLocalStorage()) {
+                console.log("Authenticated from local storage!");
+            }
         }
     }
 
-    private async waitForConnect() {
-        await new Promise<void>((resolve) => {
-            if (this.socket.getStatus() === ConnectionStatus.CONNECTED) {
-                resolve();
-            } else {
-                this.socket.on(ConnectionEvent.CONNECTED, resolve);
-            }
-        });
+    private async onDisconnect() {
+        this.auth.revokeAuth();
     }
 }

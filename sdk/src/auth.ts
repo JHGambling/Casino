@@ -1,4 +1,5 @@
 import { CasinoClient } from "./client";
+import { UserModel } from "./models/UserModel";
 import {
     AuthAuthenticatePacket,
     AuthAuthenticateResponsePacket,
@@ -12,6 +13,8 @@ export class Auth {
     public isAuthenticated: boolean = false;
     public authenticatedAs: number = 0;
     public authenticationExpiresAt: Date = new Date(0);
+
+    public user: UserModel | null = null;
 
     constructor(private client: CasinoClient) {}
 
@@ -88,9 +91,36 @@ export class Auth {
             this.authenticatedAs = response.userID;
             this.authenticationExpiresAt = new Date(response.expiresAt);
             localStorage.setItem("casino-token", token);
+
+            this.user = await this.fetchUser();
+
             return true;
         } else {
+            this.revokeAuth();
+
             return false;
         }
+    }
+
+    public async fetchUser(): Promise<UserModel | null> {
+        if (!this.isAuthenticated) {
+            return null;
+        }
+
+        const res = await this.client.db.performOperation(
+            "users",
+            "findByID",
+            this.authenticatedAs,
+            null,
+        );
+
+        return res.result as UserModel;
+    }
+
+    public revokeAuth() {
+        this.user = null;
+        this.isAuthenticated = false;
+        this.authenticatedAs = -1;
+        this.authenticationExpiresAt = new Date(0);
     }
 }

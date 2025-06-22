@@ -96,7 +96,7 @@ func (s *Server) handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	delete(s.clients, client.Addr)
 	s.mu.Unlock()
 	s.gateway.RemoveClient(gatewayClient.ID)
-	utils.Log("info", "casino::server", "client disconnected:", r.RemoteAddr)
+	//utils.Log("info", "casino::server", "client disconnected:", r.RemoteAddr)
 }
 
 // Handle messages from WebSocket client to Gateway

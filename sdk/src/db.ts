@@ -1,4 +1,5 @@
 import { CasinoClient } from "./client";
+import { DatabaseOperation } from "./types/db";
 import {
     DatabaseOperationPacket,
     DatabaseOperationResponsePacket,
@@ -11,7 +12,7 @@ export class Database {
 
     public async performOperation(
         table: string,
-        operation: string,
+        operation: DatabaseOperation,
         op_id: any,
         op_data: any,
     ): Promise<DatabaseOpResult> {

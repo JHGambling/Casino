@@ -177,6 +177,7 @@ func (packet *DatabaseOperationPacket) Handle(wsPacket WebsocketPacket, ctx *Han
 
 	userInterface, err := ctx.Database.GetUserTable().FindByID(ctx.Client.authenticatedAs)
 	if err != nil {
+		utils.Log("warn", "casino::gateway", "[db/op] error getting user:", err)
 		response := DatabaseOperationResponsePacket{
 			Op:         *packet,
 			Result:     nil,

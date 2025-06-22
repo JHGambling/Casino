@@ -102,15 +102,18 @@ func (db *Database) GetTableAsUser(tableID string) (tables.Table, error) {
 func (db *Database) PerformOperationAsUser(authenticatedUser models.UserModel, tableID string,
 	operation string, id interface{}, data interface{}) (interface{}, error) {
 
+	utils.Log("debug", "casino::data", "[OP] user:", authenticatedUser.ID, " table:'", tableID, "' op:'", operation, "' id:", id, " data:", data)
+
 	table, err := db.GetTableAsUser(tableID)
 	if err != nil {
+		utils.Log("warn", "casino::data", "[PerformOperationAsUser] error getting table:", err)
 		return nil, err
 	}
 
 	switch operation {
 	case "create":
 		return nil, table.CreateAsUser(authenticatedUser, data)
-	case "findById":
+	case "findByID":
 		return table.FindByIDAsUser(authenticatedUser, id)
 	case "findAll":
 		limit, ok := id.(int)
@@ -127,6 +130,7 @@ func (db *Database) PerformOperationAsUser(authenticatedUser models.UserModel, t
 	case "delete":
 		return nil, table.DeleteAsUser(authenticatedUser, id)
 	default:
+		utils.Log("warn", "casino::data", "[PerformOperationAsUser] unkown operation \""+operation+"\" by user", authenticatedUser.ID)
 		return nil, errors.New("unknown operation")
 	}
 }

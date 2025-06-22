@@ -76,6 +76,11 @@ func (gc *GatewayClient) handleIncomingPacket(packet WebsocketPacket) {
 			payload.Handle(packet, &gc.handlerContext)
 		}
 		break
+	case "db/op":
+		var payload DatabaseOperationPacket
+		if gc.unmarshalPayload(packet.Payload, &payload) {
+			payload.Handle(packet, &gc.handlerContext)
+		}
 	default:
 		utils.Log("warn", "casino::gateway", "unknown packet type: ", packet.Type)
 		return
