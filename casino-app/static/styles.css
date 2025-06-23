@@ -1,0 +1,11 @@
+:root {
+    /* Style for Primary Headings */
+    --text-heading-family: "Roboto", sans-serif;
+    --text-heading-size: 1.5rem;
+    --text-heading-weight: 700;
+
+    /* Style for Main Content */
+    --text-main-family: "Roboto", Arial;
+    --text-main-size: 1rem;
+    --text-main-weight: 400;
+}
