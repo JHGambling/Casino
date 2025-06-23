@@ -1,8 +1,10 @@
 # Stage 1: Build the application
 FROM golang:1.23-alpine AS builder
 
-# Install build dependencies for SQLite
-RUN apk add --no-cache gcc musl-dev sqlite
+# Install build dependencies for SQLite and plugins.
+# Explicitly add binutils to ensure the linker (ld) is available,
+# which is required for building Go plugins.
+RUN apk add --no-cache gcc musl-dev sqlite binutils
 
 WORKDIR /src
 
