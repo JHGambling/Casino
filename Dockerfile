@@ -1,37 +1,31 @@
-# Stage 1: Build the application
-FROM golang:1.23-alpine AS builder
+# Stage 1: Build the application using a Debian-based Go image
+FROM golang:1.23-bookworm AS builder
 
-# Install build dependencies for SQLite and plugins.
-# Explicitly add binutils to ensure the linker (ld) is available,
-# which is required for building Go plugins.
-RUN apk add --no-cache gcc musl-dev sqlite binutils
+# Install build dependencies for SQLite and plugins using apt-get
+# build-essential includes gcc, binutils (for ld), and other necessary tools
+RUN apt-get update && apt-get install -y build-essential libsqlite3-dev
 
 WORKDIR /src
 
 # Copy the entire backend source code
-# This is necessary because of the 'replace' directive in go.mod
 COPY casino-backend/ ./
 
 # Build the game plugins
-# First, download dependencies for the plugin
 WORKDIR /src/games/example
 RUN go mod download
-# Then, build the plugin
 RUN go build -buildmode=plugin -o /src/games/example.so .
 
 # Build the main application
 WORKDIR /src/casino
-# Tidy up dependencies
 RUN go mod tidy
-# Build the binary
 # CGO_ENABLED is required for the sqlite driver
 RUN CGO_ENABLED=1 go build -o /casino-app main.go
 
-# Stage 2: Create the final image
-FROM alpine:latest
+# Stage 2: Create the final image using a minimal Debian base
+FROM debian:bookworm-slim
 
 # Install runtime dependencies for SQLite
-RUN apk add --no-cache sqlite
+RUN apt-get update && apt-get install -y libsqlite3-0 && rm -rf /var/lib/apt/lists/*
 
 # Set environment to production so the correct DB path is used
 ENV ENV=production
