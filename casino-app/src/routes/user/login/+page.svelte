@@ -89,7 +89,7 @@
             <div class="form-body">
                 {#if step == 0}
                     <input type="text" placeholder="Nutzername" bind:value={username} on:input={onUsernameInput}>
-                    <button on:click={nextStep}>Weiter</button>
+                    <button on:click={nextStep} disabled={!isValidUsername(username)}>{userExists?"Anmelden":"Weiter"}</button>
                 {:else if step == 1}
                     {#if userExists}
                         <input type="password" placeholder="Passwort" bind:value={password}>
@@ -213,6 +213,11 @@
 
                 &:hover {
                     background-color: rgb(223, 74, 82);
+                }
+
+                &:disabled {
+                    cursor: not-allowed;
+                    background-color: #2c2b2a;
                 }
             }
         }

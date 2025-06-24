@@ -128,7 +128,7 @@ export class Auth {
 
     public async doesUserExist(username: string): Promise<boolean> {
         const response = (
-            await this.client.socket.request("db/op", {
+            await this.client.socket.request("auth/does_user_exist", {
                 username
             } as DoesUserExistPacket)
         ).payload as DoesUserExistResponsePacket;

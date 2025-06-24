@@ -239,7 +239,7 @@ func (packet *DoesUserExistPacket) Handle(wsPacket WebsocketPacket, ctx *Handler
 
 	response := DoesUserExistResponsePacket{
 		ResponsePacket: ResponsePacket{Success: true, Status: "ok"},
-		UserExists:     result != nil,
+		UserExists:     result != nil && err == nil,
 	}
 	if res, err := BuildPacket("auth/does_user_exist:res", response, wsPacket.Nonce); err == nil {
 		ctx.Client.Send(res)
