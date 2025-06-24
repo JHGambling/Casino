@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { CasinoClient } from "casino-sdk";
+    import { goto } from "$app/navigation";
 
     export let step = 0;
     export let userExists = false;
@@ -14,6 +15,11 @@
     onMount(async () => {
         client = new CasinoClient("wss://casino-host.stmbl.dev/ws");
         await client.connect();
+
+        if (client.auth.isAuthenticated) {
+            // User is already authenticated, redirect to games
+            goto("/games");
+        }
     });
 
     async function nextStep() {
@@ -29,6 +35,7 @@
                 if(res.success) {
                     // Handle successful login
                     console.log("Login successful:", client.auth.user);
+                    goto("/games");
                 } else {
                     alert("Login fehlgeschlagen");
                 }
@@ -43,7 +50,8 @@
             let res = await client.auth.register(username, password, displayName);
             if(res.success) {
                 // Handle successful login
-                console.log("Login successful:", client.auth.user);
+                console.log("Register successful:", client.auth.user);
+                goto("/games");
             } else {
                 alert("Login fehlgeschlagen");
             }
