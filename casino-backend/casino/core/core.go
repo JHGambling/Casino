@@ -6,6 +6,7 @@ import (
 	"jhgambling/backend/core/plugins"
 	"jhgambling/backend/core/server"
 	"jhgambling/backend/core/utils"
+	"os"
 )
 
 type CasinoCore struct {
@@ -41,7 +42,15 @@ func NewCasino() *CasinoCore {
 func (c *CasinoCore) Init() {
 	utils.Log("info", "casino::core", "initializing...")
 	c.Plugins.LoadPlugins()
-	c.Database.Connect()
+
+	env := os.Getenv("ENV")
+	dbPath := ""
+	if env == "production" {
+		dbPath = "/data/casino.db"
+	} else {
+		dbPath = "../casino.db"
+	}
+	c.Database.Connect(dbPath)
 	c.Database.Migrate()
 }
 
