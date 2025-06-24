@@ -1,11 +1,28 @@
 <script lang="ts">
+    import { onMount } from "svelte";
+    import { CasinoClient } from "casino-sdk";
+    import { goto } from "$app/navigation";
+    import TopBar from "./TopBar.svelte";
+
+    let client: CasinoClient;
+
+    onMount(async () => {
+        client = new CasinoClient("wss://casino-host.stmbl.dev/ws");
+        await client.connect();
+
+        if (!client.auth.isAuthenticated) {
+            goto("/user/login");
+        }
+    });
 </script>
 
 <svelte:head>
     <title>JHGambling</title>
 </svelte:head>
 
-<div class="app"></div>
+<div class="app">
+    <TopBar />
+</div>
 
 <style lang="scss">
     .app {
@@ -21,6 +38,5 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
     }
 </style>
