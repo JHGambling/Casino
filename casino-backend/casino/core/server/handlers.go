@@ -223,3 +223,25 @@ func (packet *DatabaseOperationPacket) Handle(wsPacket WebsocketPacket, ctx *Han
 		ctx.Client.Send(res)
 	}
 }
+
+func (packet *DoesUserExistPacket) Handle(wsPacket WebsocketPacket, ctx *HandlerContext) {
+	result, err := ctx.Database.GetUserTable().FindByUsername(packet.Username)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		response := DoesUserExistResponsePacket{
+			ResponsePacket: ResponsePacket{Success: false, Status: "failed", Message: "internal error: " + err.Error()},
+			UserExists:     false,
+		}
+		if res, err := BuildPacket("auth/does_user_exist:res", response, wsPacket.Nonce); err == nil {
+			ctx.Client.Send(res)
+		}
+		return
+	}
+
+	response := DoesUserExistResponsePacket{
+		ResponsePacket: ResponsePacket{Success: true, Status: "ok"},
+		UserExists:     result != nil,
+	}
+	if res, err := BuildPacket("auth/does_user_exist:res", response, wsPacket.Nonce); err == nil {
+		ctx.Client.Send(res)
+	}
+}

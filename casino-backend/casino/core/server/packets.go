@@ -40,6 +40,16 @@ type AuthAuthenticateResponsePacket struct {
 	ExpiresAt int64 `json:"expiresAt"`
 }
 
+// Does User exist
+type DoesUserExistPacket struct {
+	Username string `json:"username"`
+}
+
+type DoesUserExistResponsePacket struct {
+	ResponsePacket
+	UserExists bool `json:"userExists"`
+}
+
 // Database operation
 type DatabaseOperationPacket struct {
 	Operation string      `json:"operation"`
