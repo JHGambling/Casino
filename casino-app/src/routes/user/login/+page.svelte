@@ -1,11 +1,22 @@
 <script lang="ts">
+    import { onMount } from "svelte";
+    import { CasinoClient } from "casino-sdk";
+
     export let step = 0;
     export let userExists = false;
 
     let username: string;
     let password: string;
+    let displayName: string;
 
-    function nextStep() {
+    let client: CasinoClient;
+
+    onMount(async () => {
+        client = new CasinoClient("wss://casino-host.stmbl.dev/ws");
+        await client.connect();
+    });
+
+    async function nextStep() {
         if(step == 0) {
             if(isValidUsername(username)) {
                 step = 1;
@@ -14,7 +25,13 @@
             }
         } else if(step == 1) {
             if(userExists) {
-
+                let res = await client.auth.login(username, password);
+                if(res.success) {
+                    // Handle successful login
+                    console.log("Login successful:", client.auth.user);
+                } else {
+                    alert("Login fehlgeschlagen");
+                }
             } else {
                 if(password && password.length >= 6) {
                     step = 2;
@@ -22,6 +39,23 @@
                     alert("Bitte geben Sie ein gültiges Passwort ein (mindestens 6 Zeichen).");
                 }
             }
+        } else if(step == 2) {
+            let res = await client.auth.register(username, password, displayName);
+            if(res.success) {
+                // Handle successful login
+                console.log("Login successful:", client.auth.user);
+            } else {
+                alert("Login fehlgeschlagen");
+            }
+        }
+    }
+
+    async function onUsernameInput() {
+        if (username && username.length >= 3) {
+            const exists = await client.auth.doesUserExist(username);
+            userExists = exists;
+        } else {
+            userExists = false;
         }
     }
 
@@ -54,7 +88,7 @@
             </div>
             <div class="form-body">
                 {#if step == 0}
-                    <input type="text" placeholder="Nutzername" bind:value={username}>
+                    <input type="text" placeholder="Nutzername" bind:value={username} on:input={onUsernameInput}>
                     <button on:click={nextStep}>Weiter</button>
                 {:else if step == 1}
                     {#if userExists}
@@ -65,7 +99,7 @@
                         <button on:click={nextStep}>Weiter</button>
                     {/if}
                 {:else if step == 2}
-                    <input type="text" placeholder="Anzeigename">
+                    <input type="text" placeholder="Anzeigename" bind:value={displayName}>
                     <!-- Hier noch irgendwas für Profilbild -->
                     <button on:click={nextStep}>Registrieren</button>
                 {/if}    

@@ -34,6 +34,14 @@ export type AuthAuthenticateResponsePacket = ResponsePacket & {
     expiresAt: number;
 };
 
+export type DoesUserExistPacket = {
+    username: string;
+}
+
+export type DoesUserExistResponsePacket = ResponsePacket & {
+    userExists: boolean;
+}
+
 export type DatabaseOperationPacket = {
     operation: string;
     table: string;

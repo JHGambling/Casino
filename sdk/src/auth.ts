@@ -7,6 +7,8 @@ import {
     AuthLoginResponsePacket,
     AuthRegisterPacket,
     AuthRegisterResponsePacket,
+    DoesUserExistPacket,
+    DoesUserExistResponsePacket,
 } from "./types/packets";
 
 export class Auth {
@@ -122,5 +124,15 @@ export class Auth {
         this.isAuthenticated = false;
         this.authenticatedAs = -1;
         this.authenticationExpiresAt = new Date(0);
+    }
+
+    public async doesUserExist(username: string): Promise<boolean> {
+        const response = (
+            await this.client.socket.request("db/op", {
+                username
+            } as DoesUserExistPacket)
+        ).payload as DoesUserExistResponsePacket;
+
+        return response.userExists && response.success;
     }
 }
