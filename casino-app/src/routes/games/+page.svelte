@@ -3,6 +3,7 @@
     import { CasinoClient, ClientEvent } from "casino-sdk";
     import { goto } from "$app/navigation";
     import TopBar from "./TopBar.svelte";
+    import LoadingOverlay from "./LoadingOverlay.svelte";
 
     let client: CasinoClient = new CasinoClient(
         "wss://casino-host.stmbl.dev/ws",
@@ -28,6 +29,7 @@
 </svelte:head>
 
 <div class="app">
+    <LoadingOverlay {client} />
     <TopBar {client} />
 </div>
 
