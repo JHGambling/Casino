@@ -7,6 +7,7 @@
     let client: CasinoClient = new CasinoClient(
         "wss://casino-host.stmbl.dev/ws",
     );
+    //let client = new CasinoClient("ws://localhost:9000/ws");
 
     onMount(async () => {
         // Listen for auth events

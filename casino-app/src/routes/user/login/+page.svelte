@@ -26,6 +26,7 @@
 
     onMount(async () => {
         client = new CasinoClient("wss://casino-host.stmbl.dev/ws");
+        //client = new CasinoClient("ws://localhost:9000/ws");
         await client.connect();
 
         if (client.auth.isAuthenticated) {

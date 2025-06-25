@@ -87,6 +87,13 @@ func (gc *GatewayClient) handleIncomingPacket(packet WebsocketPacket) {
 		if gc.unmarshalPayload(packet.Payload, &payload) {
 			payload.Handle(packet, &gc.handlerContext)
 		}
+		break
+	case "ping":
+		// Simply respond with a pong to keep the connection alive
+		if res, err := BuildPacket("pong", map[string]interface{}{}, packet.Nonce); err == nil {
+			gc.Send(res)
+		}
+		break
 	default:
 		utils.Log("warn", "casino::gateway", "unknown packet type: ", packet.Type)
 		return

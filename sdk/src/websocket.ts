@@ -12,6 +12,7 @@ interface WebSocketClientOptions {
     maxReconnectAttempts?: number;
     debug?: boolean;
     requestTimeout?: number;
+    pingInterval?: number;
 }
 
 interface PendingRequest {
@@ -35,6 +36,8 @@ export class WebSocketClient {
     private maxReconnectAttempts: number;
     private debug: boolean;
     private requestTimeout: number;
+    private pingInterval: number;
+    private pingTimer: ReturnType<typeof setInterval> | null = null;
 
     constructor(options: WebSocketClientOptions) {
         this.url = options.url;
@@ -43,6 +46,7 @@ export class WebSocketClient {
         this.maxReconnectAttempts = options.maxReconnectAttempts || 50;
         this.debug = options.debug || false;
         this.requestTimeout = options.requestTimeout || 30000; // 30 seconds default
+        this.pingInterval = options.pingInterval || 30000; // 30 seconds default
     }
 
     /**
@@ -86,6 +90,7 @@ export class WebSocketClient {
 
             // Prevent auto reconnect when explicitly disconnected
             this.autoReconnect = false;
+            this.stopPingTimer();
             this.ws.close();
         }
     }
@@ -211,6 +216,7 @@ export class WebSocketClient {
             this.status = ConnectionStatus.CONNECTED;
             this.reconnectAttempts = 0;
             this.log("Connection established");
+            this.startPingTimer();
             this.emit(ConnectionEvent.CONNECTED);
         };
 
@@ -222,6 +228,8 @@ export class WebSocketClient {
             this.rejectAllPendingRequests(
                 new Error("WebSocket connection closed"),
             );
+
+            this.stopPingTimer();
 
             if (wasConnected) {
                 this.log("Connection closed");
@@ -336,6 +344,29 @@ export class WebSocketClient {
             pendingRequest.reject(error);
         }
         this.pendingRequests.clear();
+    }
+
+    /**
+     * Start the ping timer to keep the connection alive
+     */
+    private startPingTimer(): void {
+        this.stopPingTimer();
+        this.pingTimer = setInterval(() => {
+            if (this.status === ConnectionStatus.CONNECTED) {
+                this.send("ping", {});
+                this.log("Sent ping packet");
+            }
+        }, this.pingInterval);
+    }
+
+    /**
+     * Stop the ping timer
+     */
+    private stopPingTimer(): void {
+        if (this.pingTimer) {
+            clearInterval(this.pingTimer);
+            this.pingTimer = null;
+        }
     }
 
     /**
