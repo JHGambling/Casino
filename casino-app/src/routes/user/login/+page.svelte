@@ -6,10 +6,16 @@
     export let step = 0;
     export let userExists = false;
 
-    let username: string;
-    let password: string;
-    let displayName: string;
+    let username: string = "";
+    let password: string = "";
+    let displayName: string = "";
     let loading = false;
+
+    // Validation messages
+    let usernameError: string = "";
+    let passwordError: string = "";
+    let loginError: string = "";
+    let registerError: string = "";
 
     // References to input elements for focus management
     let usernameInput: HTMLInputElement;
@@ -33,17 +39,27 @@
 
     async function nextStep() {
         if (loading) return;
+
+        // Clear previous errors
+        loginError = "";
+        registerError = "";
+
+        // Validate the current step
+        if (step === 0 && !validateUsername()) {
+            return;
+        }
+
+        if (step === 1 && !userExists && !validatePassword()) {
+            return;
+        }
+
         loading = true;
 
         try {
             if (step == 0) {
-                if (isValidUsername(username)) {
-                    step = 1;
-                    // Focus on password input after username is validated
-                    setTimeout(() => passwordInput?.focus(), 0);
-                } else {
-                    alert("Bitte geben Sie einen gültigen Nutzernamen ein.");
-                }
+                step = 1;
+                // Focus on password input after username is validated
+                setTimeout(() => passwordInput?.focus(), 0);
             } else if (step == 1) {
                 if (userExists) {
                     let res = await client.auth.login(username, password);
@@ -52,31 +68,33 @@
                         console.log("Login successful:", client.auth.user);
                         goto("/games");
                     } else {
-                        alert("Login fehlgeschlagen");
+                        loginError =
+                            "Login fehlgeschlagen. Bitte überprüfen Sie Ihre Anmeldedaten.";
                     }
                 } else {
-                    if (password && password.length >= 6) {
-                        step = 2;
-                        // Focus on display name input after password is validated
-                        setTimeout(() => displayNameInput?.focus(), 0);
-                    } else {
-                        alert(
-                            "Bitte geben Sie ein gültiges Passwort ein (mindestens 6 Zeichen).",
-                        );
-                    }
+                    step = 2;
+                    // Focus on display name input after password is validated
+                    setTimeout(() => displayNameInput?.focus(), 0);
                 }
             } else if (step == 2) {
+                if (!displayName || displayName.trim() === "") {
+                    registerError = "Bitte geben Sie einen Anzeigenamen ein.";
+                    return;
+                }
+
                 let res = await client.auth.register(
                     username,
                     password,
                     displayName,
                 );
                 if (res.success) {
-                    // Handle successful login
+                    // Handle successful registration
                     console.log("Register successful:", client.auth.user);
                     goto("/games");
                 } else {
-                    alert("Login fehlgeschlagen");
+                    registerError = res.userAlreadyTaken
+                        ? "Dieser Nutzername ist bereits vergeben."
+                        : "Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut.";
                 }
             }
         } finally {
@@ -85,12 +103,65 @@
     }
 
     async function onUsernameInput() {
+        validateUsername(false);
+
         if (username && username.length >= 3) {
             const exists = await client.auth.doesUserExist(username);
             userExists = exists;
         } else {
             userExists = false;
         }
+    }
+
+    function validateUsername(showError = true) {
+        usernameError = "";
+
+        if (!username || username.trim() === "") {
+            if (showError)
+                usernameError = "Bitte geben Sie einen Nutzernamen ein.";
+            return false;
+        }
+
+        if (username.length < 3) {
+            if (showError)
+                usernameError =
+                    "Der Nutzername muss mindestens 3 Zeichen lang sein.";
+            return false;
+        }
+
+        if (username.length > 20) {
+            if (showError)
+                usernameError =
+                    "Der Nutzername darf maximal 20 Zeichen lang sein.";
+            return false;
+        }
+
+        if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+            if (showError)
+                usernameError =
+                    "Der Nutzername darf nur Buchstaben, Zahlen und Unterstriche enthalten.";
+            return false;
+        }
+
+        return true;
+    }
+
+    function validatePassword(showError = true) {
+        passwordError = "";
+
+        if (!password || password.trim() === "") {
+            if (showError) passwordError = "Bitte geben Sie ein Passwort ein.";
+            return false;
+        }
+
+        if (password.length < 6) {
+            if (showError)
+                passwordError =
+                    "Das Passwort muss mindestens 6 Zeichen lang sein.";
+            return false;
+        }
+
+        return true;
     }
 
     function isValidUsername(username: string) {
@@ -107,6 +178,14 @@
         if (event.key === "Enter") {
             nextStep();
         }
+    }
+
+    function onPasswordInput() {
+        validatePassword(false);
+    }
+
+    function onDisplayNameInput() {
+        registerError = "";
     }
 </script>
 
@@ -131,14 +210,20 @@
             </div>
             <div class="form-body">
                 {#if step == 0}
-                    <input
-                        type="text"
-                        placeholder="Nutzername"
-                        bind:value={username}
-                        bind:this={usernameInput}
-                        on:input={onUsernameInput}
-                        on:keydown={handleKeydown}
-                    />
+                    <div class="input-container">
+                        <input
+                            type="text"
+                            placeholder="Nutzername"
+                            bind:value={username}
+                            bind:this={usernameInput}
+                            on:input={onUsernameInput}
+                            on:keydown={handleKeydown}
+                            class:error={usernameError}
+                        />
+                        {#if usernameError}
+                            <div class="error-message">{usernameError}</div>
+                        {/if}
+                    </div>
                     <button
                         on:click={nextStep}
                         disabled={!isValidUsername(username) || loading}
@@ -151,13 +236,23 @@
                     </button>
                 {:else if step == 1}
                     {#if userExists}
-                        <input
-                            type="password"
-                            placeholder="Passwort"
-                            bind:value={password}
-                            bind:this={passwordInput}
-                            on:keydown={handleKeydown}
-                        />
+                        <div class="input-container">
+                            <input
+                                type="password"
+                                placeholder="Passwort"
+                                bind:value={password}
+                                bind:this={passwordInput}
+                                on:input={onPasswordInput}
+                                on:keydown={handleKeydown}
+                                class:error={passwordError}
+                            />
+                            {#if passwordError}
+                                <div class="error-message">{passwordError}</div>
+                            {/if}
+                        </div>
+                        {#if loginError}
+                            <div class="error-message">{loginError}</div>
+                        {/if}
                         <button on:click={nextStep} disabled={loading}>
                             {#if loading}
                                 <span class="spinner"></span>
@@ -166,13 +261,20 @@
                             {/if}
                         </button>
                     {:else}
-                        <input
-                            type="password"
-                            placeholder="Passwort"
-                            bind:value={password}
-                            bind:this={passwordInput}
-                            on:keydown={handleKeydown}
-                        />
+                        <div class="input-container">
+                            <input
+                                type="password"
+                                placeholder="Passwort"
+                                bind:value={password}
+                                bind:this={passwordInput}
+                                on:input={onPasswordInput}
+                                on:keydown={handleKeydown}
+                                class:error={passwordError}
+                            />
+                            {#if passwordError}
+                                <div class="error-message">{passwordError}</div>
+                            {/if}
+                        </div>
                         <button on:click={nextStep} disabled={loading}>
                             {#if loading}
                                 <span class="spinner"></span>
@@ -182,13 +284,20 @@
                         </button>
                     {/if}
                 {:else if step == 2}
-                    <input
-                        type="text"
-                        placeholder="Anzeigename"
-                        bind:value={displayName}
-                        bind:this={displayNameInput}
-                        on:keydown={handleKeydown}
-                    />
+                    <div class="input-container">
+                        <input
+                            type="text"
+                            placeholder="Anzeigename"
+                            bind:value={displayName}
+                            bind:this={displayNameInput}
+                            on:input={onDisplayNameInput}
+                            on:keydown={handleKeydown}
+                            class:error={registerError}
+                        />
+                    </div>
+                    {#if registerError}
+                        <div class="error-message">{registerError}</div>
+                    {/if}
                     <!-- Hier noch irgendwas für Profilbild -->
                     <button on:click={nextStep} disabled={loading}>
                         {#if loading}
@@ -278,21 +387,43 @@
             align-items: center;
             justify-content: center;
 
-            gap: 0.25rem;
+            gap: 0.5rem;
 
-            input {
-                width: calc(100% - 2rem);
+            .input-container {
+                width: 100%;
+                position: relative;
 
-                padding: 1rem 1rem;
-                border-radius: 0.5rem;
-                background-color: #2c2b2a;
-                border: none;
-                outline: none;
+                input {
+                    width: calc(100% - 2rem);
+
+                    padding: 1rem 1rem;
+                    border-radius: 0.5rem;
+                    background-color: #2c2b2a;
+                    border: 2px solid transparent;
+                    outline: none;
+
+                    font-family: var(--text-main-family);
+                    font-size: var(--text-main-size);
+                    font-weight: var(--text-main-weight);
+                    color: #ffffff;
+                    transition: border-color 0.2s ease;
+
+                    &.error {
+                        border-color: rgb(255, 99, 107);
+                    }
+                }
+            }
+
+            .error-message {
+                color: rgb(255, 99, 107);
+                font-size: 0.9rem;
+                margin-top: 0.2rem;
+                width: 100%;
+                text-align: left;
 
                 font-family: var(--text-main-family);
                 font-size: var(--text-main-size);
                 font-weight: var(--text-main-weight);
-                color: #ffffff;
             }
 
             button {
@@ -303,7 +434,7 @@
                 border: none;
                 cursor: pointer;
 
-                margin-top: 0.25rem;
+                margin-top: 0.5rem;
 
                 font-family: var(--text-main-family);
                 font-size: var(--text-main-size);
