@@ -21,7 +21,7 @@
 </svelte:head>
 
 <div class="app">
-    <TopBar />
+    <TopBar {client} />
 </div>
 
 <style lang="scss">
