@@ -42,7 +42,7 @@
         top: 0;
         left: 0;
 
-        background-color: #141312;
+        background-color: #18181b;
 
         display: flex;
         flex-direction: column;

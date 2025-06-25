@@ -104,7 +104,7 @@
 
         padding: 0rem 1rem;
 
-        background-color: #201f1e;
+        background-color: #201f1e00;
 
         display: flex;
         flex-direction: row;
@@ -121,7 +121,7 @@
 
     .tb-section.right {
         .logo {
-            height: 3rem;
+            height: 2.5rem;
         }
 
         .title {
@@ -153,8 +153,8 @@
             }
 
             .user-avatar {
-                width: 2rem;
-                height: 2rem;
+                width: 1.5rem;
+                height: 1.5rem;
                 border-radius: 50%;
                 background: rgb(204, 52, 59);
                 display: flex;
