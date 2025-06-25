@@ -1,5 +1,6 @@
 import { CasinoClient } from "./client";
 import { UserModel } from "./models/UserModel";
+import { ClientEvent } from "./types/events";
 import {
     AuthAuthenticatePacket,
     AuthAuthenticateResponsePacket,
@@ -43,6 +44,12 @@ export class Auth {
         ).payload as AuthRegisterResponsePacket;
 
         if (!response.success) {
+            this.client["emit"](
+                ClientEvent.AUTH_FAIL,
+                response.userAlreadyExists
+                    ? "Username already taken"
+                    : "Registration failed",
+            );
             return {
                 success: false,
                 userAlreadyTaken: response.userAlreadyExists,
@@ -68,6 +75,12 @@ export class Auth {
         ).payload as AuthLoginResponsePacket;
 
         if (!response.success) {
+            this.client["emit"](
+                ClientEvent.AUTH_FAIL,
+                response.userDoesNotExist
+                    ? "User not found"
+                    : "Invalid credentials",
+            );
             return {
                 success: false,
                 userNotFound: response.userDoesNotExist,
@@ -96,10 +109,11 @@ export class Auth {
 
             this.user = await this.fetchUser();
 
+            this.client["emit"](ClientEvent.AUTH_SUCCESS, this.authenticatedAs);
             return true;
         } else {
             this.revokeAuth();
-
+            this.client["emit"](ClientEvent.AUTH_FAIL, "Authentication failed");
             return false;
         }
     }
@@ -120,19 +134,31 @@ export class Auth {
     }
 
     public revokeAuth() {
-        this.user = null;
-        this.isAuthenticated = false;
-        this.authenticatedAs = -1;
-        this.authenticationExpiresAt = new Date(0);
+        if (this.isAuthenticated) {
+            this.user = null;
+            this.isAuthenticated = false;
+            this.authenticatedAs = -1;
+            this.authenticationExpiresAt = new Date(0);
+            localStorage.removeItem("casino-token");
+            this.client["emit"](ClientEvent.AUTH_REVOKED);
+        }
     }
 
     public async doesUserExist(username: string): Promise<boolean> {
-        const response = (
-            await this.client.socket.request("auth/does_user_exist", {
-                username
-            } as DoesUserExistPacket)
-        ).payload as DoesUserExistResponsePacket;
+        try {
+            const response = (
+                await this.client.socket.request("auth/does_user_exist", {
+                    username,
+                } as DoesUserExistPacket)
+            ).payload as DoesUserExistResponsePacket;
 
-        return response.userExists && response.success;
+            return response.userExists && response.success;
+        } catch (error) {
+            this.client["emit"](
+                ClientEvent.ERROR,
+                error instanceof Error ? error : new Error(String(error)),
+            );
+            return false;
+        }
     }
 }

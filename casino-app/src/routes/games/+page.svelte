@@ -1,13 +1,19 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import { CasinoClient } from "casino-sdk";
+    import { CasinoClient, ClientEvent } from "casino-sdk";
     import { goto } from "$app/navigation";
     import TopBar from "./TopBar.svelte";
 
-    let client: CasinoClient;
+    let client: CasinoClient = new CasinoClient(
+        "wss://casino-host.stmbl.dev/ws",
+    );
 
     onMount(async () => {
-        client = new CasinoClient("wss://casino-host.stmbl.dev/ws");
+        // Listen for auth events
+        client.on(ClientEvent.AUTH_FAIL, () => {
+            goto("/user/login");
+        });
+
         await client.connect();
 
         if (!client.auth.isAuthenticated) {

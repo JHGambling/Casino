@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import { CasinoClient } from "casino-sdk";
+    import { CasinoClient, ClientEvent } from "casino-sdk";
     import { goto } from "$app/navigation";
     import { slide } from "svelte/transition";
 
@@ -16,6 +16,20 @@
 
     onMount(() => {
         updateUserInfo();
+
+        if (client) {
+            // Listen for auth success to update user info
+            client.on(ClientEvent.AUTH_SUCCESS, () => {
+                updateUserInfo();
+            });
+
+            // Listen for auth revocation
+            client.on(ClientEvent.AUTH_REVOKED, () => {
+                username = "";
+                displayName = "";
+                balance = 0;
+            });
+        }
     });
 
     async function updateUserInfo() {
