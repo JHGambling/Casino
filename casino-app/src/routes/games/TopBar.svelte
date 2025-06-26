@@ -66,6 +66,9 @@
         <div class="title">JHGambling</div>
     </div>
     <div class="left tb-section">
+        <div class="wallet-button">
+            <span class="networth">0.00$</span>
+        </div>
         <div class="user-menu-container">
             <button class="user-button" on:click={toggleDropdown}>
                 <div class="user-avatar">
@@ -133,6 +136,28 @@
     }
 
     .tb-section.left {
+        .wallet-button {
+            height: 2.5rem;
+
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0rem 1rem;
+            background: #2c2b2a;
+            border: none;
+            border-radius: 0.5rem;
+            color: white;
+            cursor: pointer;
+
+            &:hover {
+                background: #3c3b3a;
+            }
+
+            font-family: var(--text-main-family);
+            font-size: var(--text-main-size);
+            font-weight: var(--text-main-weight);
+        }
+
         .user-menu-container {
             position: relative;
         }

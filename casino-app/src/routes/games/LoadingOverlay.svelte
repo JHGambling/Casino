@@ -50,8 +50,8 @@
         left: 0;
         width: 100vw;
         height: 100vh;
-        background-color: rgba(20, 19, 18, 0.8);
-        backdrop-filter: blur(10px);
+        background-color: rgba(31, 33, 34, 0.3);
+        backdrop-filter: blur(0.5rem);
         z-index: 1000;
 
         display: flex;
