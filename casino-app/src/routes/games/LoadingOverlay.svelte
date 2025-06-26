@@ -51,7 +51,7 @@
         width: 100vw;
         height: 100vh;
         background-color: rgba(31, 33, 34, 0.3);
-        backdrop-filter: blur(0.5rem);
+        backdrop-filter: blur(1rem);
         z-index: 1000;
 
         display: flex;
@@ -72,7 +72,7 @@
         border: 6px solid rgba(255, 255, 255, 0.1);
         border-radius: 50%;
         border-top: 6px solid #cc343b;
-        animation: spin 1s infinite;
+        animation: spin 0.75s infinite linear;
     }
 
     .loading-text {

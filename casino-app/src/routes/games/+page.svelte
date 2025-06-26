@@ -35,6 +35,9 @@
 
     <div class="games-container">
         <GameCard name="Slotty" imageUrl="/assets/images/slot_example_image.webp" />
+        <GameCard name="Blackjack" imageUrl="/assets/images/blackjack_example_image.webp" />
+        <GameCard name="Roulette" imageUrl="/assets/images/roulette_example_image.png" />
+        <GameCard name="Russisch Roulette" imageUrl="/assets/images/russian_roulette_example_image.webp" />
     </div>
 </div>
 
