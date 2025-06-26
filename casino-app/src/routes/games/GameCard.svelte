@@ -24,7 +24,7 @@
         overflow: hidden;
         transition: transform 0.2s ease;
 
-        background-color: #ff0000;
+        background-color: #27292f;
         background-image: url("{imageUrl}");
         background-size: cover; /* Ensure the image covers the entire card */
         background-position: center; /* Center the image */
@@ -34,12 +34,11 @@
         .info-bar {
             width: calc(100% - 2rem);
             padding: 1rem;
-            border-radius: 0.75rem;
 
             overflow: hidden;
             text-align: center;
 
-            background-color: #27272bcc;
+            background-color: #27292f;
             backdrop-filter: blur(0.2rem);
 
             transition: 0.2s ease;
@@ -55,7 +54,7 @@
             cursor: pointer;
 
             .info-bar {
-                background-color: #35353add;
+                background-color: #31333b;
             }
         }
     }

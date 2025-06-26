@@ -143,14 +143,14 @@
             align-items: center;
             gap: 0.5rem;
             padding: 0rem 1rem;
-            background: #2c2b2a;
+            background: #27292f;
             border: none;
             border-radius: 0.5rem;
             color: white;
             cursor: pointer;
 
             &:hover {
-                background: #3c3b3a;
+                background: #31333b;
             }
 
             font-family: var(--text-main-family);
@@ -167,14 +167,14 @@
             align-items: center;
             gap: 0.5rem;
             padding: 0.5rem 1rem;
-            background: #2c2b2a;
+            background: #27292f;
             border: none;
             border-radius: 0.5rem;
             color: white;
             cursor: pointer;
 
             &:hover {
-                background: #3c3b3a;
+                background: #31333b;
             }
 
             .user-avatar {
@@ -200,11 +200,6 @@
                 font-size: var(--text-main-size);
                 font-weight: var(--text-main-weight);
             }
-
-            .dropdown-arrow {
-                font-size: 0.7rem;
-                opacity: 0.7;
-            }
         }
 
         .dropdown-menu {
@@ -212,7 +207,7 @@
             top: 100%;
             right: 0;
             margin-top: 0.5rem;
-            background: #2c2b2a;
+            background: #27292f;
             border-radius: 0.5rem;
             width: 100%;
             min-width: 12rem;
@@ -222,7 +217,7 @@
 
             .dropdown-header {
                 padding: 0.75rem 1rem;
-                border-bottom: 1px solid #3c3b3a;
+                border-bottom: 1px solid #31333b;
                 display: flex;
                 flex-direction: column;
 
