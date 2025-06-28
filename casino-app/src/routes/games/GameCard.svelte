@@ -38,7 +38,7 @@
             overflow: hidden;
             text-align: center;
 
-            background-color: #27292f;
+            background-color: #202126;
             backdrop-filter: blur(0.2rem);
 
             transition: 0.2s ease;
@@ -54,7 +54,7 @@
             cursor: pointer;
 
             .info-bar {
-                background-color: #31333b;
+                background-color: #292a30;
             }
         }
     }

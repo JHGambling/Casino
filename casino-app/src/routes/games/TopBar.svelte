@@ -143,14 +143,14 @@
             align-items: center;
             gap: 0.5rem;
             padding: 0rem 1rem;
-            background: #27292f;
+            background: #202126;
             border: none;
             border-radius: 0.5rem;
             color: white;
             cursor: pointer;
 
             &:hover {
-                background: #31333b;
+                background: #292a30;
             }
 
             font-family: var(--text-main-family);
@@ -167,14 +167,14 @@
             align-items: center;
             gap: 0.5rem;
             padding: 0.5rem 1rem;
-            background: #27292f;
+            background: #202126;
             border: none;
             border-radius: 0.5rem;
             color: white;
             cursor: pointer;
 
             &:hover {
-                background: #31333b;
+                background: #292a30;
             }
 
             .user-avatar {
@@ -207,17 +207,17 @@
             top: 100%;
             right: 0;
             margin-top: 0.5rem;
-            background: #27292f;
+            background: #202126;
             border-radius: 0.5rem;
             width: 100%;
             min-width: 12rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 0.8rem rgba(0, 0, 0, 0.25);
             z-index: 10;
             overflow: hidden;
 
             .dropdown-header {
                 padding: 0.75rem 1rem;
-                border-bottom: 1px solid #31333b;
+                border-bottom: 1px solid #292a30;
                 display: flex;
                 flex-direction: column;
 
@@ -254,11 +254,11 @@
                 }
 
                 &:hover {
-                    background: #3c3b3a;
+                    background: #292a30;
                 }
 
                 &:not(:last-child) {
-                    border-bottom: 1px solid #3c3b3a;
+                    border-bottom: 1px solid #292a30;
                 }
             }
         }

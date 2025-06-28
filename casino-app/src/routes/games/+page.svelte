@@ -34,7 +34,7 @@
     <LoadingOverlay {client} />
     <TopBar {client} />
 
-    <ListPage />
+    <GamePage />
 </div>
 
 <style lang="scss">
