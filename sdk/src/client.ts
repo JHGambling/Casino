@@ -1,4 +1,5 @@
 import { Auth } from "./auth";
+import { Casino } from "./casino/Casino";
 import { Database } from "./db";
 import { UserTable } from "./db/UserTable";
 import { WalletTable } from "./db/WalletTable";
@@ -13,6 +14,7 @@ export class CasinoClient {
     public db: Database;
     public users: UserTable;
     public wallets: WalletTable;
+    public casino: Casino;
 
     private wasConnected: boolean = false;
     private eventListeners: Map<string, Function[]> = new Map();
@@ -38,6 +40,7 @@ export class CasinoClient {
         this.db = new Database(this);
         this.users = new UserTable(this);
         this.wallets = new WalletTable(this);
+        this.casino = new Casino(this);
     }
 
     public async connect() {

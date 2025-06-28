@@ -9,3 +9,6 @@ export { WalletTable } from "./db/WalletTable";
 // Models
 export { UserModel } from "./models/UserModel";
 export { WalletModel } from "./models/WalletModel";
+
+// Casino Abstractions
+export { User, Wallet, Casino } from "./casino/index";
