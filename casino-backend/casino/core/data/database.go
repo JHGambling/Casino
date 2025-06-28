@@ -45,12 +45,15 @@ func (db *Database) Migrate() {
 	if len(registeredTables) == 0 {
 		// If no tables are registered, fall back to direct model migration
 	} else {
-		// Migrate models from registered tables
+		// Migrate models from registered tables and repair them
 		for _, table := range registeredTables {
 			db.connection.AutoMigrate(table.GetModelType())
 
 			// Set the DB connection for each table
 			table.SetDB(db.connection)
+
+			// Repair the table
+			table.Repair()
 		}
 	}
 
@@ -59,6 +62,11 @@ func (db *Database) Migrate() {
 
 func (db *Database) RegisterDefaultTables() {
 	utils.Log("info", "casino::data", "registering default tables...")
+
+	if err := db.RegisterTable(tables.NewWalletTable()); err != nil {
+		utils.Log("error", "casino::data", "error registering wallets table:", err)
+		panic("failed to register default tables")
+	}
 
 	if err := db.RegisterTable(tables.NewUserTable()); err != nil {
 		utils.Log("error", "casino::data", "error registering users table:", err)

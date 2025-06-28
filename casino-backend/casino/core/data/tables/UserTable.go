@@ -2,6 +2,7 @@ package tables
 
 import (
 	"errors"
+	"jhgambling/backend/core/utils"
 	"jhgambling/protocol"
 	"jhgambling/protocol/models"
 
@@ -53,14 +54,14 @@ func (t *UserTable) Create(data interface{}) error {
 // FindByID finds a user by ID
 func (t *UserTable) FindByID(id interface{}) (interface{}, error) {
 	var user models.UserModel
-	result := t.DB.First(&user, id)
+	result := t.DB.Preload("Wallet").First(&user, id)
 	return &user, result.Error
 }
 
 // FindByUsername finds a user by username
 func (t *UserTable) FindByUsername(username string) (*models.UserModel, error) {
 	var user models.UserModel
-	result := t.DB.Where("username = ?", username).First(&user)
+	result := t.DB.Where("username = ?", username).Preload("Wallet").First(&user)
 	return &user, result.Error
 }
 
@@ -71,7 +72,7 @@ func (t *UserTable) FindAll(limit, offset int) ([]interface{}, error) {
 	}
 
 	var users []models.UserModel
-	result := t.DB.Limit(limit).Offset(offset).Find(&users)
+	result := t.DB.Limit(limit).Offset(offset).Preload("Wallet").Find(&users)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -197,4 +198,42 @@ func (t *UserTable) Update(id interface{}, data interface{}) error {
 	}
 
 	return t.DB.Model(&models.UserModel{}).Where("id = ?", id).Updates(userData).Error
+}
+
+func (t *UserTable) Repair() {
+	t.repair_addWallets()
+}
+
+func (t *UserTable) repair_addWallets() {
+	allUsers, err := t.FindAll(10000, 0)
+	if err != nil {
+		utils.Log("error", "casino::data", "[UserTable] [Repair] repair_addWallets failed with an error while getting all users:", err)
+		return
+	}
+
+	for _, u := range allUsers {
+		userData, ok := u.(*models.UserModel)
+		if !ok {
+			continue
+		}
+
+		// Check if user has a wallet
+		if userData.Wallet.ID == 0 {
+			// Create new wallet for the user
+			wallet := &models.WalletModel{
+				UserID:                userData.ID,
+				NetworthCents:         0,
+				ReceivedStartingBonus: false,
+			}
+
+			// Save the wallet directly
+			err := t.DB.Create(wallet).Error
+			if err != nil {
+				utils.Log("error", "casino::data", "[UserTable] [Repair] failed to create wallet for user:", userData.ID, "error:", err)
+				continue
+			}
+
+			utils.Log("ok", "casino::data", "[UserTable] [Repair] created wallet for user:", userData.ID)
+		}
+	}
 }

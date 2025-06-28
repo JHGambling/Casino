@@ -15,4 +15,6 @@ type UserModel struct {
 	PasswordHash string
 	JoinedAt     time.Time
 	IsAdmin      bool
+
+	Wallet WalletModel `gorm:"foreignKey:UserID"`
 }

@@ -29,6 +29,9 @@ type Table interface {
 	// Database interaction
 	SetDB(db *gorm.DB)
 	GetDB() *gorm.DB
+
+	// Single-time functions
+	Repair()
 }
 
 // BaseTable provides a default implementation of the Table interface
@@ -56,6 +59,11 @@ func (t *BaseTable) SetDB(db *gorm.DB) {
 // GetDB returns the database connection
 func (t *BaseTable) GetDB() *gorm.DB {
 	return t.DB
+}
+
+// This function can be used to repair models when the database starts up
+func (t *BaseTable) Repair() {
+
 }
 
 // Create inserts a new record
