@@ -123,14 +123,7 @@ export class Auth {
             return null;
         }
 
-        const res = await this.client.db.performOperation(
-            "users",
-            "findByID",
-            this.authenticatedAs,
-            null,
-        );
-
-        return res.result as UserModel;
+        return await this.client.users.getCurrentUser();
     }
 
     public revokeAuth() {

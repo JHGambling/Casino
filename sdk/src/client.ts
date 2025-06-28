@@ -1,5 +1,7 @@
 import { Auth } from "./auth";
 import { Database } from "./db";
+import { UserTable } from "./db/UserTable";
+import { WalletTable } from "./db/WalletTable";
 import { ClientEvent } from "./types/events";
 import { ConnectionEvent, ConnectionStatus } from "./types/ws";
 import { WebSocketClient } from "./websocket";
@@ -9,6 +11,8 @@ export class CasinoClient {
 
     public auth: Auth;
     public db: Database;
+    public users: UserTable;
+    public wallets: WalletTable;
 
     private wasConnected: boolean = false;
     private eventListeners: Map<string, Function[]> = new Map();
@@ -32,6 +36,8 @@ export class CasinoClient {
 
         this.auth = new Auth(this);
         this.db = new Database(this);
+        this.users = new UserTable(this);
+        this.wallets = new WalletTable(this);
     }
 
     public async connect() {
