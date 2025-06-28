@@ -2,6 +2,7 @@
     import { onMount } from "svelte";
     import { CasinoClient } from "casino-sdk";
     import { goto } from "$app/navigation";
+    import { WS_URL } from "$lib/config";
 
     export let step = 0;
     export let userExists = false;
@@ -25,8 +26,7 @@
     let client: CasinoClient;
 
     onMount(async () => {
-        client = new CasinoClient("wss://casino-host.stmbl.dev/ws");
-        //client = new CasinoClient("ws://localhost:9000/ws");
+        client = new CasinoClient(WS_URL);
         await client.connect();
 
         if (client.auth.isAuthenticated) {

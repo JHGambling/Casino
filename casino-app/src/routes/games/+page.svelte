@@ -2,15 +2,13 @@
     import { onMount } from "svelte";
     import { CasinoClient, ClientEvent } from "casino-sdk";
     import { goto } from "$app/navigation";
+    import { WS_URL } from "$lib/config";
     import TopBar from "./TopBar.svelte";
     import LoadingOverlay from "./LoadingOverlay.svelte";
     import ListPage from "./ListPage.svelte";
     import GamePage from "./GamePage.svelte";
 
-    let client: CasinoClient = new CasinoClient(
-        "wss://casino-host.stmbl.dev/ws",
-    );
-    //let client = new CasinoClient("ws://localhost:9000/ws");
+    let client: CasinoClient = new CasinoClient(WS_URL);
 
     onMount(async () => {
         // Listen for auth events

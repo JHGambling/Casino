@@ -1,10 +1,11 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { CasinoClient } from "casino-sdk";
+    import { WS_URL } from "$lib/config";
 
     onMount(async () => {
         let start = Date.now();
-        const client = new CasinoClient("ws://localhost:9000/ws");
+        const client = new CasinoClient(WS_URL);
         await client.connect();
         /*console.log("connected");
         await client.auth.authenticate(
