@@ -39,6 +39,8 @@ export class WebSocketClient {
     private pingInterval: number;
     private pingTimer: ReturnType<typeof setInterval> | null = null;
 
+    public latestPingTime = 0;
+
     constructor(options: WebSocketClientOptions) {
         this.url = options.url;
         this.autoReconnect = options.autoReconnect !== false;
@@ -183,6 +185,10 @@ export class WebSocketClient {
     public on(
         event: ConnectionEvent.RECONNECTING,
         callback: (attempt: number) => void,
+    ): void;
+    public on(
+        event: ConnectionEvent.PING,
+        callback: (pingTime: number) => void,
     ): void;
     public on(event: string, callback: Function): void {
         if (!this.eventListeners.has(event)) {
@@ -351,10 +357,13 @@ export class WebSocketClient {
      */
     private startPingTimer(): void {
         this.stopPingTimer();
-        this.pingTimer = setInterval(() => {
+        this.pingTimer = setInterval(async () => {
             if (this.status === ConnectionStatus.CONNECTED) {
-                this.send("ping", {});
-                this.log("Sent ping packet");
+                let start = Date.now();
+                await this.request("ping", {});
+                let pingTime = Date.now() - start;
+                this.latestPingTime = pingTime;
+                this.emit(ConnectionEvent.PING, this.latestPingTime);
             }
         }, this.pingInterval);
     }

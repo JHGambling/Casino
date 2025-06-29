@@ -6,11 +6,16 @@
 
     let isConnected = client.casino.isConnectedStore;
     let isAuthenticated = client.casino.isAuthenticatedStore;
+    let pingTime = client.casino.pingTimeStore;
 </script>
 
 <div class="field">
     <div class="row">
         <div class="value">Token: {token}</div>
+    </div>
+    <div class="row">
+        <div class="value">PingTime (round trip): {$pingTime}ms</div>
+        <div class="value">PingTime (one way): {$pingTime / 2}ms</div>
     </div>
     <div class="row">
         <div class="value">Connected: {$isConnected ? "✅" : "❌"}</div>

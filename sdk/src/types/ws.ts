@@ -15,6 +15,7 @@ export enum ConnectionEvent {
     MESSAGE = "message",
     ERROR = "error",
     RECONNECTING = "reconnecting",
+    PING = "ping",
 }
 
 // Event callback types
@@ -22,6 +23,7 @@ export type ConnectionEventCallback = () => void;
 export type MessageEventCallback = (packet: WebsocketPacket) => void;
 export type ErrorEventCallback = (error: Error) => void;
 export type ReconnectingEventCallback = (attemptNumber: number) => void;
+export type PingEventCallback = (pingTime: number) => void;
 
 // Request timeout error
 export class RequestTimeoutError extends Error {

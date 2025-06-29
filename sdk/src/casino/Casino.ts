@@ -25,6 +25,8 @@ export class Casino {
     public readonly isAuthenticatedStore: CasinoStore<boolean> =
         createStore<boolean>(false);
 
+    public readonly pingTimeStore: CasinoStore<number> = createStore<number>(0);
+
     /**
      * Creates a new Casino instance
      *

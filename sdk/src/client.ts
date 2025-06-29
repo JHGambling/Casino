@@ -49,6 +49,10 @@ export class CasinoClient {
             this.handlePacket(packet);
         });
 
+        this.socket.on(ConnectionEvent.PING, (pingTime: number) => {
+            this.casino.pingTimeStore.set(pingTime);
+        });
+
         this.auth = new Auth(
             this,
             typeof options?.authenticateFromLocalStorage === "boolean"
