@@ -6,6 +6,7 @@
     import { CasinoClient } from "casino-sdk";
     import ClientField from "./ClientField.svelte";
     import UserField from "./UserField.svelte";
+    import WalletField from "./WalletField.svelte";
 
     let client: CasinoClient = new CasinoClient(WS_URL, {
         authenticateFromLocalStorage: false,
@@ -25,6 +26,7 @@
 <div class="game">
     <ClientField {client} token={$page.data.token} />
     <UserField {client} />
+    <WalletField {client} />
 </div>
 
 <style lang="scss">

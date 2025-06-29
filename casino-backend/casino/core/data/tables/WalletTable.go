@@ -2,6 +2,7 @@ package tables
 
 import (
 	"errors"
+	"fmt"
 	"jhgambling/protocol"
 	"jhgambling/protocol/models"
 )
@@ -88,21 +89,19 @@ func (t *WalletTable) FindAllAsUser(user models.UserModel, limit, offset int) ([
 // UpdateAsUser modifies a wallet with permission check
 func (t *WalletTable) UpdateAsUser(user models.UserModel, id interface{}, data interface{}) error {
 	// Users can update their own wallet
-	walletID, ok := id.(uint)
+	idFloat, ok := id.(float64)
 	if !ok {
-		return errors.New("invalid ID format")
+		fmt.Println("well still no")
+		return errors.New("invalid ID format: expected float64")
 	}
+	walletID := uint(idFloat)
 
 	if user.Wallet.ID != walletID && !user.IsAdmin {
+		fmt.Println("permission error")
 		return errors.New("permission denied: you can only update your own wallet data")
 	}
 
-	walletData, ok := data.(*models.WalletModel)
-	if !ok {
-		return errors.New("invalid data type: expected *models.WalletModel")
-	}
-
-	return t.Update(id, walletData)
+	return t.Update(id, data)
 }
 
 // DeleteAsUser removes a wallet with permission check
@@ -117,10 +116,5 @@ func (t *WalletTable) DeleteAsUser(user models.UserModel, id interface{}) error 
 
 // Update updates a wallet
 func (t *WalletTable) Update(id interface{}, data interface{}) error {
-	walletData, ok := data.(*models.WalletModel)
-	if !ok {
-		return errors.New("invalid data type: expected *models.WalletModel")
-	}
-
-	return t.DB.Model(&models.WalletModel{}).Where("id = ?", id).Updates(walletData).Error
+	return t.DB.Model(&models.WalletModel{}).Where("id = ?", id).Updates(data).Error
 }

@@ -3,7 +3,6 @@
     export let client: CasinoClient;
 
     let user = client.casino.user.store;
-    let isAuthenticated = client.casino.isAuthenticatedStore;
 </script>
 
 <div class="field">
