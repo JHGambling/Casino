@@ -1,18 +1,13 @@
 <script lang="ts">
-    import {
-        CasinoClient,
-        CasinoStore,
-        type UserModel,
-        type WalletModel,
-    } from "casino-sdk";
+    import { CasinoClient } from "casino-sdk";
     import { goto } from "$app/navigation";
     import { slide } from "svelte/transition";
 
     export let client: CasinoClient;
     let showDropdown = false;
 
-    let user: CasinoStore<UserModel> = client.casino.user.store;
-    let wallet: CasinoStore<WalletModel> = client.casino.wallet.store;
+    let user = client.casino.user.store;
+    let wallet = client.casino.wallet.store;
 
     function toggleDropdown() {
         showDropdown = !showDropdown;

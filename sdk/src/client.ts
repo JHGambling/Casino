@@ -7,6 +7,11 @@ import { ClientEvent } from "./types/events";
 import { ConnectionEvent, ConnectionStatus } from "./types/ws";
 import { WebSocketClient } from "./websocket";
 
+export type CasinoClientOptions = {
+    authenticateFromLocalStorage?: boolean;
+    token?: string;
+};
+
 export class CasinoClient {
     public socket: WebSocketClient;
 
@@ -19,7 +24,10 @@ export class CasinoClient {
     private wasConnected: boolean = false;
     private eventListeners: Map<string, Function[]> = new Map();
 
-    constructor(public url: string) {
+    constructor(
+        public url: string,
+        public options?: CasinoClientOptions,
+    ) {
         this.socket = new WebSocketClient({
             url: this.url,
             autoReconnect: true,
@@ -36,7 +44,12 @@ export class CasinoClient {
             this.emit(ClientEvent.DISCONNECT);
         });
 
-        this.auth = new Auth(this);
+        this.auth = new Auth(
+            this,
+            typeof options?.authenticateFromLocalStorage === "boolean"
+                ? options.authenticateFromLocalStorage
+                : true,
+        );
         this.db = new Database(this);
         this.users = new UserTable(this);
         this.wallets = new WalletTable(this);
@@ -54,10 +67,29 @@ export class CasinoClient {
     private async onConnect() {
         this.wasConnected = true;
         if (!this.auth.isAuthenticated) {
-            console.log("Trying to authenticate from localstorage...");
-            if (await this.auth.authFromLocalStorage()) {
-                console.log("Authenticated from local storage!");
-                this.emit(ClientEvent.AUTH_SUCCESS, this.auth.authenticatedAs);
+            // Check if we should NOT authenticate from local storage
+            if (
+                typeof this.options?.authenticateFromLocalStorage !==
+                    "boolean" ||
+                this.options?.authenticateFromLocalStorage == true
+            ) {
+                console.log("Trying to authenticate from localstorage...");
+                let success = await this.auth.authFromLocalStorage();
+                if (success) {
+                    console.log("Authenticated from local storage!");
+                }
+            }
+
+            // Check if we should authenticate with a specific token
+            if (
+                !this.auth.isAuthenticated &&
+                typeof this.options?.token === "string"
+            ) {
+                console.log("Trying to authenticate with options.token...");
+                let success = await this.auth.authFromLocalStorage();
+                if (success) {
+                    console.log("Authenticated from options.token!");
+                }
             }
         }
     }

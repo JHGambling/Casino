@@ -2,8 +2,8 @@ import { CasinoClient } from "../client";
 import { User } from "./User";
 import { Wallet } from "./Wallet";
 import { ClientEvent } from "../types/events";
-import { UserModel } from "../models/UserModel";
-import { WalletModel } from "../models/WalletModel";
+import { CasinoStore, createStore } from "../store/index";
+import { ConnectionStatus } from "../types/ws";
 
 /**
  * Casino class provides a simplified interface to casino operations
@@ -12,6 +12,18 @@ import { WalletModel } from "../models/WalletModel";
 export class Casino {
     public user: User;
     public wallet: Wallet;
+
+    /**
+     * Store indicating whether the client is currently connected
+     */
+    public readonly isConnectedStore: CasinoStore<boolean> =
+        createStore<boolean>(false);
+
+    /**
+     * Store indicating whether the user is currently authenticated
+     */
+    public readonly isAuthenticatedStore: CasinoStore<boolean> =
+        createStore<boolean>(false);
 
     /**
      * Creates a new Casino instance
@@ -40,10 +52,12 @@ export class Casino {
 
         // Listen for authentication events to update the current user
         this.client.on(ClientEvent.AUTH_SUCCESS, async () => {
+            this.isAuthenticatedStore.set(true);
             await this.refreshCurrentUser();
         });
 
         this.client.on(ClientEvent.AUTH_REVOKED, () => {
+            this.isAuthenticatedStore.set(false);
             this.user.reset();
             // Reset wallet data without creating a new instance
             this.wallet.resetData({
@@ -53,6 +67,21 @@ export class Casino {
                 UserID: -1,
             });
         });
+
+        // Listen for connection events
+        this.client.on(ClientEvent.CONNECT, () => {
+            this.isConnectedStore.set(true);
+        });
+
+        this.client.on(ClientEvent.DISCONNECT, () => {
+            this.isConnectedStore.set(false);
+        });
+
+        // Initialize stores with current state
+        this.isConnectedStore.set(
+            this.client.socket.getStatus() === ConnectionStatus.CONNECTED,
+        );
+        this.isAuthenticatedStore.set(this.client.auth.isAuthenticated);
     }
 
     /**

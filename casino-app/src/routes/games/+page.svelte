@@ -32,7 +32,7 @@
     <LoadingOverlay {client} />
     <TopBar {client} />
 
-    <GamePage />
+    <GamePage {client} />
 </div>
 
 <style lang="scss">

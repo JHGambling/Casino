@@ -1,16 +1,22 @@
 <script lang="ts">
-    import GameCard from "./GameCard.svelte";
+    import type { CasinoClient } from "casino-sdk";
+    export let client: CasinoClient;
+
+    let isAuthenticated = client.casino.isAuthenticatedStore;
 </script>
 
 <div class="game-page">
     <div class="control-bar"></div>
 
     <div class="game">
-        <iframe
-            src="https://jhgambling.github.io/slotty/index.html"
-            title="Game"
-            frameborder="0"
-        ></iframe>
+        {#if $isAuthenticated}
+            <iframe
+                src="http://localhost:5173/test/example-game?token={client.auth
+                    .usedToken}"
+                title="Game"
+                frameborder="0"
+            ></iframe>
+        {/if}
     </div>
 </div>
 

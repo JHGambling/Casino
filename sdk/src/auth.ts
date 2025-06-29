@@ -19,9 +19,16 @@ export class Auth {
 
     public user: UserModel | null = null;
 
-    constructor(private client: CasinoClient) {}
+    public usedToken: string | null = null;
+
+    constructor(
+        private client: CasinoClient,
+        private enableAuthFromLocalStorage: boolean = true,
+    ) {}
 
     public async authFromLocalStorage(): Promise<boolean> {
+        if (!this.enableAuthFromLocalStorage) return false;
+
         let token = localStorage.getItem("casino-token");
         if (token) {
             return this.authenticate(token);
@@ -105,14 +112,17 @@ export class Auth {
             this.isAuthenticated = true;
             this.authenticatedAs = response.userID;
             this.authenticationExpiresAt = new Date(response.expiresAt);
-            localStorage.setItem("casino-token", token);
+            if (this.enableAuthFromLocalStorage)
+                localStorage.setItem("casino-token", token);
 
             this.user = await this.fetchUser();
 
+            this.usedToken = token;
             this.client["emit"](ClientEvent.AUTH_SUCCESS, this.authenticatedAs);
             return true;
         } else {
             this.revokeAuth();
+            this.usedToken = null;
             this.client["emit"](ClientEvent.AUTH_FAIL, "Authentication failed");
             return false;
         }

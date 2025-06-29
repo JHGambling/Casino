@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import { CasinoClient } from "casino-sdk";
+    import { CasinoClient, ClientEvent } from "casino-sdk";
     import { goto } from "$app/navigation";
     import { WS_URL } from "$lib/config";
 
@@ -28,6 +28,13 @@
     onMount(async () => {
         client = new CasinoClient(WS_URL);
         await client.connect();
+
+        client.on(ClientEvent.AUTH_SUCCESS, () => {
+            if (client.auth.isAuthenticated) {
+                // User is already authenticated, redirect to games
+                goto("/games");
+            }
+        });
 
         if (client.auth.isAuthenticated) {
             // User is already authenticated, redirect to games
