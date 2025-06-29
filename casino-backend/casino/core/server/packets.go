@@ -64,3 +64,18 @@ type DatabaseOperationResponsePacket struct {
 	Error      interface{}             `json:"err"`
 	ExecTimeUs int64                   `json:"exec_time_us"`
 }
+
+// Database subscribe
+type DatabaseSubscribePacket struct {
+	Operation  string `json:"operation"`
+	TableID    string `json:"tableID"`
+	ResourceID uint   `json:"resourceID"`
+}
+
+type DatabaseSubUpdatePacket struct {
+	TableID    string      `json:"tableID"`
+	ResourceID interface{} `json:"resourceID"`
+
+	Operation string      `json:"op"`
+	Data      interface{} `json:"data"`
+}

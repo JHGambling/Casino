@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"jhgambling/backend/core/utils"
+	"jhgambling/protocol"
 	"time"
 )
 
@@ -17,6 +18,8 @@ type GatewayClient struct {
 	isAuthenticated         bool
 	authenticatedAs         uint
 	authenticationExpriesAt time.Time
+
+	Subscriptions []DBSubscription
 }
 
 func NewGatewayClient(addr string, ctx GatewayContext) *GatewayClient {
@@ -25,6 +28,8 @@ func NewGatewayClient(addr string, ctx GatewayContext) *GatewayClient {
 		Addr:         addr,
 		IncomingChan: make(chan []byte, 100),
 		OutgoingChan: make(chan []byte, 100),
+
+		Subscriptions: make([]DBSubscription, 128),
 	}
 
 	client.handlerContext = HandlerContext{
@@ -88,6 +93,12 @@ func (gc *GatewayClient) handleIncomingPacket(packet WebsocketPacket) {
 			payload.Handle(packet, &gc.handlerContext)
 		}
 		break
+	case "db/sub":
+		var payload DatabaseSubscribePacket
+		if gc.unmarshalPayload(packet.Payload, &payload) {
+			payload.Handle(packet, &gc.handlerContext)
+		}
+		break
 	case "ping":
 		// Simply respond with a pong to keep the connection alive
 		if res, err := BuildPacket("pong", map[string]interface{}{}, packet.Nonce); err == nil {
@@ -130,6 +141,19 @@ func (gc *GatewayClient) SendUnauthorizedPacket(nonce uint64) {
 			Success: false,
 			Status:  "unauthorized",
 			Message: "You have to be authorized to interact",
+		},
+		nonce); err == nil {
+		gc.Send(res)
+	}
+}
+
+func (gc *GatewayClient) SendSubscriptionUpdatePacket(record protocol.SubChangedRecord) {
+	if res, err := BuildPacket("db/sub:update",
+		DatabaseSubUpdatePacket{
+			Operation:  record.Operation,
+			TableID:    record.TableID,
+			ResourceID: record.ResourceID,
+			Data:       record.Record,
 		},
 		nonce); err == nil {
 		gc.Send(res)

@@ -49,6 +49,11 @@ func (t *UserTable) Create(data interface{}) error {
 		return err
 	}
 
+	err = t.DB.Create(user).Error
+	if err == nil {
+		t.PushRecordChange("create", user.ID, toSafeUser(user))
+	}
+
 	return t.DB.Create(user).Error
 }
 
@@ -199,7 +204,23 @@ func (t *UserTable) Update(id interface{}, data interface{}) error {
 		}
 	}
 
-	return t.DB.Model(&models.UserModel{}).Where("id = ?", id).Updates(userData).Error
+	// Perform the update
+	err := t.DB.Model(&models.UserModel{}).Where("id = ?", id).Updates(userData).Error
+	if err != nil {
+		return err
+	}
+
+	// Fetch the updated row
+	var updatedUser models.UserModel
+	err = t.DB.First(&updatedUser, "id = ?", id).Error
+	if err != nil {
+		return err
+	}
+
+	// Push the change with the updated record
+	t.PushRecordChange("update", id, &updatedUser)
+
+	return nil
 }
 
 func (t *UserTable) Repair() {

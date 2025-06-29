@@ -22,12 +22,14 @@ func NewWalletTable() *WalletTable {
 	}
 }
 
-// Create creates a new user
+// Create creates a new wallet
 func (t *WalletTable) Create(data interface{}) error {
 	wallet, ok := data.(*models.WalletModel)
 	if !ok {
 		return errors.New("invalid data type: expected *models.WalletModel")
 	}
+
+	t.PushRecordChange("create", nil, wallet)
 
 	return t.DB.Create(wallet).Error
 }
@@ -112,9 +114,4 @@ func (t *WalletTable) DeleteAsUser(user models.UserModel, id interface{}) error 
 	}
 
 	return t.Delete(id)
-}
-
-// Update updates a wallet
-func (t *WalletTable) Update(id interface{}, data interface{}) error {
-	return t.DB.Model(&models.WalletModel{}).Where("id = ?", id).Updates(data).Error
 }

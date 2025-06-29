@@ -30,15 +30,20 @@ type Table interface {
 	SetDB(db *gorm.DB)
 	GetDB() *gorm.DB
 
+	SetSubscriptionChannel(channel *chan SubChangedRecord)
+	PushRecordChange(operation string, id interface{}, data interface{})
+	CanViewChangedRecord(user models.UserModel, record SubChangedRecord) bool
+
 	// Single-time functions
 	Repair()
 }
 
 // BaseTable provides a default implementation of the Table interface
 type BaseTable struct {
-	ID    string
-	DB    *gorm.DB
-	Model interface{}
+	ID                  string
+	DB                  *gorm.DB
+	SubscriptionChannel *chan SubChangedRecord
+	Model               interface{}
 }
 
 // GetID returns the table identifier
@@ -61,6 +66,10 @@ func (t *BaseTable) GetDB() *gorm.DB {
 	return t.DB
 }
 
+func (t *BaseTable) SetSubscriptionChannel(channel *chan SubChangedRecord) {
+	t.SubscriptionChannel = channel
+}
+
 // This function can be used to repair models when the database starts up
 func (t *BaseTable) Repair() {
 
@@ -68,7 +77,12 @@ func (t *BaseTable) Repair() {
 
 // Create inserts a new record
 func (t *BaseTable) Create(data interface{}) error {
-	return t.DB.Create(data).Error
+	err := t.DB.Create(data).Error
+	if err == nil {
+		t.PushRecordChange("create", nil, data)
+	}
+
+	return err
 }
 
 // FindByID retrieves a record by its ID
@@ -92,12 +106,35 @@ func (t *BaseTable) FindAll(limit, offset int) ([]interface{}, error) {
 
 // Update modifies an existing record
 func (t *BaseTable) Update(id interface{}, data interface{}) error {
-	return t.DB.Model(t.GetModelType()).Where("id = ?", id).Updates(data).Error
+	// Perform the update
+	err := t.DB.Model(t.GetModelType()).Where("id = ?", id).Updates(data).Error
+	if err != nil {
+		return err
+	}
+
+	// Create a new instance of the model to hold the updated row
+	updated := t.GetModelType()
+
+	// Fetch the updated record
+	err = t.DB.First(updated, "id = ?", id).Error
+	if err != nil {
+		return err
+	}
+
+	// Pass the updated record to PushRecordChange
+	t.PushRecordChange("update", id, updated)
+
+	return nil
 }
 
 // Delete removes a record
 func (t *BaseTable) Delete(id interface{}) error {
-	return t.DB.Delete(t.GetModelType(), id).Error
+	err := t.DB.Delete(t.GetModelType(), id).Error
+	if err == nil {
+		t.PushRecordChange("delete", id, nil)
+	}
+
+	return err
 }
 
 // CreateAsUser creates a new record with user permission check
@@ -128,4 +165,18 @@ func (t *BaseTable) UpdateAsUser(user models.UserModel, id interface{}, data int
 func (t *BaseTable) DeleteAsUser(user models.UserModel, id interface{}) error {
 	// Add Permission check
 	return t.Delete(id)
+}
+
+func (t *BaseTable) PushRecordChange(operation string, id interface{}, data interface{}) {
+	*t.SubscriptionChannel <- SubChangedRecord{
+		Operation:  operation,
+		TableID:    t.ID,
+		ResourceID: id,
+		Record:     data,
+	}
+}
+
+func (t *BaseTable) CanViewChangedRecord(user models.UserModel, record SubChangedRecord) bool {
+	// Add Permission check
+	return true
 }

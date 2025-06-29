@@ -143,3 +143,7 @@ func (db *Database) PerformOperationAsUser(authenticatedUser models.UserModel, t
 		return nil, errors.New("unknown operation")
 	}
 }
+
+func (db *Database) SetSubscriptionChannel(ch *chan protocol.SubChangedRecord) {
+	db.registry.SetSubscriptionChannel(ch)
+}

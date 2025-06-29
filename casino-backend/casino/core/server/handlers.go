@@ -245,3 +245,30 @@ func (packet *DoesUserExistPacket) Handle(wsPacket WebsocketPacket, ctx *Handler
 		ctx.Client.Send(res)
 	}
 }
+
+func (packet *DatabaseSubscribePacket) Handle(wsPacket WebsocketPacket, ctx *HandlerContext) {
+	if !ctx.Client.IsAuthenticated() {
+		ctx.Client.SendUnauthorizedPacket(wsPacket.Nonce)
+		return
+	}
+
+	utils.Log("debug", "casino::gateway", "[db/sub] user:", ctx.Client.authenticatedAs, " op:'", packet.Operation, "' table:", packet.TableID, " resource:", packet.ResourceID)
+
+	if packet.Operation == "subscribe" {
+		ctx.Client.Subscriptions = append(ctx.Client.Subscriptions, DBSubscription{
+			TableID:    packet.TableID,
+			ResourceID: packet.ResourceID,
+		})
+	} else if packet.Operation == "unsubscribe" {
+		for i, sub := range ctx.Client.Subscriptions {
+			// Remove matching subscriptions
+			// or Remove all subscriptions (if tableID is empty)
+			if sub.TableID == packet.TableID && sub.ResourceID == packet.ResourceID || len(packet.TableID) == 0 {
+				ctx.Client.Subscriptions = append(ctx.Client.Subscriptions[:i], ctx.Client.Subscriptions[i+1:]...)
+				break
+			}
+		}
+	} else {
+		utils.Log("warn", "casino::gateway", "[db/sub] user ", ctx.Client.authenticatedAs, " tried to perform unkown db/sub operation: ", packet.Operation)
+	}
+}

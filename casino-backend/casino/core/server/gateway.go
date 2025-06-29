@@ -10,13 +10,16 @@ type Gateway struct {
 	Clients map[string]*GatewayClient
 	mu      sync.Mutex
 
+	Subscriptions *SubscriptionManager
+
 	ctx GatewayContext
 }
 
 func NewGateway(ctx GatewayContext) *Gateway {
 	gw := &Gateway{
-		Clients: make(map[string]*GatewayClient),
-		ctx:     ctx,
+		Clients:       make(map[string]*GatewayClient),
+		Subscriptions: NewSubscriptionsManager(ctx),
+		ctx:           ctx,
 	}
 
 	gw.ctx.Gateway = gw

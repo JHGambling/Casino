@@ -78,3 +78,12 @@ func (r *TableRegistry) Remove(tableID string) error {
 	utils.Log("ok", "casino::data::tables", fmt.Sprintf("unregistered table: %s", tableID))
 	return nil
 }
+
+func (r *TableRegistry) SetSubscriptionChannel(ch *chan protocol.SubChangedRecord) {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+
+	for _, table := range r.tables {
+		table.SetSubscriptionChannel(ch)
+	}
+}

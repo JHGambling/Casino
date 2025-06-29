@@ -7,6 +7,7 @@ import (
 	"jhgambling/backend/core/server"
 	"jhgambling/backend/core/utils"
 	"os"
+	"time"
 )
 
 type CasinoCore struct {
@@ -52,10 +53,15 @@ func (c *CasinoCore) Init() {
 	}
 	c.Database.Connect(dbPath)
 	c.Database.Migrate()
+	c.Database.SetSubscriptionChannel(&c.Gateway.Subscriptions.ChangedRecordsChannel)
 }
 
 func (c *CasinoCore) Start() {
 	utils.Log("info", "casino::core", "starting...")
 
-	c.Server.Start(":9000")
+	go c.Server.Start(":9000")
+	for {
+		c.Gateway.Subscriptions.Update()
+		time.Sleep(time.Millisecond * 10)
+	}
 }
