@@ -1,15 +1,15 @@
 import { CasinoClient } from "../client";
 import { UserModel } from "../models/UserModel";
-import { Wallet } from "./Wallet";
+import { CasinoStore, createStore } from "../store/index";
 
 /**
  * User class provides simplified access to user information and operations
  */
 export class User {
     /**
-     * The wallet associated with this user
+     * Store containing the user data
      */
-    private _wallet: Wallet | null = null;
+    public readonly store: CasinoStore<UserModel>;
 
     /**
      * Creates a new User instance
@@ -19,75 +19,61 @@ export class User {
      */
     constructor(
         private client: CasinoClient,
-        private userData: UserModel,
-    ) {}
+        userData: UserModel,
+    ) {
+        this.store = createStore<UserModel>(userData);
+    }
+
+    public reset() {
+        this.store.set({
+            ID: -1,
+            Username: "",
+            DisplayName: "",
+            IsAdmin: false,
+            JoinedAt: "",
+        });
+    }
 
     /**
      * Get the user's ID
      */
     public get id(): number {
-        return this.userData.ID;
+        return this.store.get().ID;
     }
 
     /**
      * Get the user's username
      */
     public get username(): string {
-        return this.userData.Username;
+        return this.store.get().Username;
     }
 
     /**
      * Get the user's display name
      */
     public get displayName(): string {
-        return this.userData.DisplayName;
+        return this.store.get().DisplayName;
     }
 
     /**
      * Get the date when the user joined
      */
     public get joinedAt(): Date {
-        return new Date(this.userData.JoinedAt);
+        return new Date(this.store.get().JoinedAt);
     }
 
     /**
      * Check if the user is an admin
      */
     public get isAdmin(): boolean {
-        return this.userData.IsAdmin;
+        return this.store.get().IsAdmin;
     }
 
     /**
      * Get the raw user data model
      */
     public get data(): UserModel {
-        return this.userData;
-    }
-
-    /**
-     * Get the user's wallet
-     *
-     * @returns A promise that resolves with the user's wallet
-     */
-    public async getWallet(): Promise<Wallet> {
-        if (this._wallet) {
-            return this._wallet;
-        }
-
-        // If wallet data is already in the user model
-        if (this.userData.Wallet) {
-            this._wallet = new Wallet(this.client, this.userData.Wallet);
-            return this._wallet;
-        }
-
-        // Try to fetch the wallet
-        const walletData = await this.client.wallets.getCurrentWallet();
-        if (walletData) {
-            this._wallet = new Wallet(this.client, walletData);
-            return this._wallet;
-        }
-
-        throw new Error("Could not retrieve wallet for this user");
+        return this.store.get();
     }
 
     /**
@@ -105,8 +91,11 @@ export class User {
             throw new Error(`Failed to update display name: ${result.err}`);
         }
 
-        // Update local data
-        this.userData.DisplayName = newDisplayName;
+        // Update store data
+        this.store.update((userData: UserModel) => ({
+            ...userData,
+            DisplayName: newDisplayName,
+        }));
     }
 
     /**
@@ -120,7 +109,6 @@ export class User {
             throw new Error(`Failed to refresh user data: ${result.err}`);
         }
 
-        this.userData = result.result as UserModel;
-        this._wallet = null; // Clear cached wallet to force refresh
+        this.store.set(result.result as UserModel);
     }
 }

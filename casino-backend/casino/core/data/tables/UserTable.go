@@ -16,6 +16,7 @@ type SafeUserModel struct {
 	DisplayName string
 	JoinedAt    string
 	IsAdmin     bool
+	Wallet      models.WalletModel
 }
 
 // UserTable provides table operations for the UserModel
@@ -100,6 +101,7 @@ func toSafeUser(user *models.UserModel) *SafeUserModel {
 		DisplayName: user.DisplayName,
 		JoinedAt:    user.JoinedAt.Format("2006-01-02 15:04:05"),
 		IsAdmin:     user.IsAdmin,
+		Wallet:      user.Wallet,
 	}
 }
 

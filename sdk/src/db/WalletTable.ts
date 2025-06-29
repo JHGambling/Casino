@@ -30,24 +30,30 @@ export class WalletTable extends BaseTable<WalletModel> {
             return this.client.auth.user.Wallet;
         }
 
-        /*try {
-            // Try to get the wallet ID from the user or fall back to user ID
-            const walletId =
-                this.client.auth.user.Wallet?.ID ||
-                this.client.auth.authenticatedAs;
+        try {
+            // Use a custom operation that searches for a wallet by user ID
+            // We'll use findAll and then filter on the client side
+            const result = await this.findAll(100, 0);
 
-            // Fetch the wallet by ID
-            const result = await this.findById(walletId);
             if (result.err) {
                 console.error("Error fetching current wallet:", result.err);
                 return null;
             }
 
-            return result.result as WalletModel;
+            // Filter the results to find the wallet belonging to the current user
+            if (Array.isArray(result.result)) {
+                const userWallet = result.result.find(
+                    (wallet: WalletModel) =>
+                        wallet.UserID === this.client.auth.authenticatedAs,
+                );
+
+                return userWallet || null;
+            }
+
+            return null;
         } catch (error) {
             console.error("Exception fetching current wallet:", error);
             return null;
-            }*/
-        return null;
+        }
     }
 }

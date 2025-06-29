@@ -12,3 +12,12 @@ export { WalletModel } from "./models/WalletModel";
 
 // Casino Abstractions
 export { User, Wallet, Casino } from "./casino/index";
+
+// Store
+export {
+    CasinoStore,
+    createStore,
+    isStore,
+    getValue,
+    getStoreValue,
+} from "./store/index";

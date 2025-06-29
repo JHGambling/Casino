@@ -1,44 +1,18 @@
 <script lang="ts">
-    import { onMount } from "svelte";
-    import { CasinoClient, ClientEvent } from "casino-sdk";
+    import {
+        CasinoClient,
+        CasinoStore,
+        type UserModel,
+        type WalletModel,
+    } from "casino-sdk";
     import { goto } from "$app/navigation";
     import { slide } from "svelte/transition";
 
     export let client: CasinoClient;
     let showDropdown = false;
-    let username = "";
-    let displayName = "";
-    let balance = 0;
 
-    $: if (client && client.auth && client.auth.user) {
-        updateUserInfo();
-    }
-
-    onMount(() => {
-        updateUserInfo();
-
-        if (client) {
-            // Listen for auth success to update user info
-            client.on(ClientEvent.AUTH_SUCCESS, () => {
-                updateUserInfo();
-            });
-
-            // Listen for auth revocation
-            client.on(ClientEvent.AUTH_REVOKED, () => {
-                username = "";
-                displayName = "";
-                balance = 0;
-            });
-        }
-    });
-
-    async function updateUserInfo() {
-        if (client && client.auth && client.auth.user) {
-            username = client.auth.user.Username;
-            displayName = client.auth.user.DisplayName || username;
-            // We could fetch the user's balance here if needed
-        }
-    }
+    let user: CasinoStore<UserModel> = client.casino.user.store;
+    let wallet: CasinoStore<WalletModel> = client.casino.wallet.store;
 
     function toggleDropdown() {
         showDropdown = !showDropdown;
@@ -67,27 +41,29 @@
     </div>
     <div class="left tb-section">
         <div class="wallet-button">
-            <span class="networth">0.00$</span>
+            <span class="networth"
+                >{($wallet.NetworthCents / 100).toFixed(2)}$</span
+            >
         </div>
         <div class="user-menu-container">
             <button class="user-button" on:click={toggleDropdown}>
                 <div class="user-avatar">
-                    {#if username}
+                    {#if $user.Username}
                         <img
-                            src={`https://api.dicebear.com/9.x/glass/svg?seed=${username}`}
+                            src={`https://api.dicebear.com/9.x/glass/svg?seed=${$user.Username}`}
                             alt="Avatar"
                         />
                     {:else}
                         ?
                     {/if}
                 </div>
-                <span class="username">{displayName || "User"}</span>
+                <span class="username">{$user.DisplayName || "User"}</span>
             </button>
             {#if showDropdown}
                 <div class="dropdown-menu" transition:slide={{ duration: 150 }}>
                     <div class="dropdown-header">
-                        <strong>{displayName}</strong>
-                        <small>@{username}</small>
+                        <strong>{$user.DisplayName}</strong>
+                        <small>@{$user.Username}</small>
                     </div>
                     <button class="dropdown-item" on:click={logout}>
                         <span class="icon">🚪</span> Abmelden

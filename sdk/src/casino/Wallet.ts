@@ -1,10 +1,16 @@
 import { CasinoClient } from "../client";
 import { WalletModel } from "../models/WalletModel";
+import { CasinoStore, createStore } from "../store/index";
 
 /**
  * Wallet class provides simplified access to wallet information and operations
  */
 export class Wallet {
+    /**
+     * Store containing the wallet data
+     */
+    public readonly store: CasinoStore<WalletModel>;
+
     /**
      * Creates a new Wallet instance
      *
@@ -13,49 +19,51 @@ export class Wallet {
      */
     constructor(
         private client: CasinoClient,
-        private walletData: WalletModel,
-    ) {}
+        walletData: WalletModel,
+    ) {
+        this.store = createStore<WalletModel>(walletData);
+    }
 
     /**
      * Get the wallet ID
      */
     public get id(): number {
-        return this.walletData.ID;
+        return this.store.get().ID;
     }
 
     /**
      * Get the user ID associated with this wallet
      */
     public get userId(): number {
-        return this.walletData.UserID;
+        return this.store.get().UserID;
     }
 
     /**
      * Check if the user has received the starting bonus
      */
     public get hasReceivedStartingBonus(): boolean {
-        return this.walletData.ReceivedStartingBonus;
+        return this.store.get().ReceivedStartingBonus;
     }
 
     /**
      * Get the networth in cents
      */
     public get networthCents(): number {
-        return this.walletData.NetworthCents;
+        return this.store.get().NetworthCents;
     }
 
     /**
      * Get the networth in dollars (formatted with 2 decimal places)
      */
     public get networth(): number {
-        return this.walletData.NetworthCents / 100;
+        return this.store.get().NetworthCents / 100;
     }
 
     /**
      * Get the raw wallet data model
      */
     public get data(): WalletModel {
-        return this.walletData;
+        return this.store.get();
     }
 
     /**
@@ -73,8 +81,11 @@ export class Wallet {
             throw new Error(`Failed to update networth: ${result.err}`);
         }
 
-        // Update local data
-        this.walletData.NetworthCents = newAmountCents;
+        // Update store data
+        this.store.update((walletData: WalletModel) => ({
+            ...walletData,
+            NetworthCents: newAmountCents,
+        }));
     }
 
     /**
@@ -84,7 +95,8 @@ export class Wallet {
      * @returns A promise that resolves when the update is complete
      */
     public async addFunds(amountCents: number): Promise<void> {
-        const newAmount = this.walletData.NetworthCents + amountCents;
+        const currentWallet = this.store.get();
+        const newAmount = currentWallet.NetworthCents + amountCents;
         await this.updateNetworth(newAmount);
     }
 
@@ -96,11 +108,12 @@ export class Wallet {
      * @throws Error if the wallet doesn't have enough funds
      */
     public async removeFunds(amountCents: number): Promise<void> {
-        if (this.walletData.NetworthCents < amountCents) {
+        const currentWallet = this.store.get();
+        if (currentWallet.NetworthCents < amountCents) {
             throw new Error("Insufficient funds");
         }
 
-        const newAmount = this.walletData.NetworthCents - amountCents;
+        const newAmount = currentWallet.NetworthCents - amountCents;
         await this.updateNetworth(newAmount);
     }
 
@@ -110,7 +123,7 @@ export class Wallet {
      * @returns A promise that resolves when the update is complete
      */
     public async markStartingBonusReceived(): Promise<void> {
-        if (this.walletData.ReceivedStartingBonus) {
+        if (this.store.get().ReceivedStartingBonus) {
             return; // Already received, nothing to do
         }
 
@@ -124,8 +137,11 @@ export class Wallet {
             );
         }
 
-        // Update local data
-        this.walletData.ReceivedStartingBonus = true;
+        // Update store data
+        this.store.update((walletData: WalletModel) => ({
+            ...walletData,
+            ReceivedStartingBonus: true,
+        }));
     }
 
     /**
@@ -139,7 +155,7 @@ export class Wallet {
             throw new Error(`Failed to refresh wallet data: ${result.err}`);
         }
 
-        this.walletData = result.result as WalletModel;
+        this.store.set(result.result as WalletModel);
     }
 
     /**
@@ -150,5 +166,23 @@ export class Wallet {
      */
     public formatNetworth(currency: string = "$"): string {
         return `${currency}${this.networth.toFixed(2)}`;
+    }
+
+    /**
+     * Update the wallet with new data without creating a new instance
+     *
+     * @param walletData The new wallet data
+     */
+    public updateData(walletData: WalletModel): void {
+        this.store.set(walletData);
+    }
+
+    /**
+     * Reset the wallet data to defaults
+     *
+     * @param defaultData The default wallet data to set
+     */
+    public resetData(defaultData: WalletModel): void {
+        this.store.set(defaultData);
     }
 }

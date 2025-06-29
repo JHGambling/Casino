@@ -9,10 +9,10 @@ The main application where you can log in, access the individual games and compe
 
 ### Features
 
-- [ ] User Login
-- [ ] Game List / Casino Map
-- [ ] Embedding Games (using iframes maybe?)
-- [ ] Money / Wallet System
+- [x] User Login
+- [ ] Game List
+- [ ] Embedding Games
+- [x] Money / Wallet System
 - [ ] Net Worth Leaderboard
 - [ ] Temporary Bans (2-3 minutes) when you lose all your money before you can restart
 
