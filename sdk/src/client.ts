@@ -86,7 +86,7 @@ export class CasinoClient {
                 typeof this.options?.token === "string"
             ) {
                 console.log("Trying to authenticate with options.token...");
-                let success = await this.auth.authFromLocalStorage();
+                let success = await this.auth.authenticate(this.options.token);
                 if (success) {
                     console.log("Authenticated from options.token!");
                 }

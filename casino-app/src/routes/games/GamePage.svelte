@@ -6,8 +6,6 @@
 </script>
 
 <div class="game-page">
-    <div class="control-bar"></div>
-
     <div class="game">
         {#if $isAuthenticated}
             <iframe
@@ -36,22 +34,10 @@
         gap: 0.5rem;
     }
 
-    .control-bar {
-        width: calc(100% - 1rem);
-        height: 2rem;
-        padding: 0.5rem;
-
-        border-radius: 0.5rem 0.5rem 1rem 1rem;
-        border-radius: 1rem 1rem 0.5rem 0.5rem;
-
-        background-color: #202126;
-    }
-
     .game {
         width: 100%;
         flex-grow: 1;
-        border-radius: 1rem 1rem 0.5rem 0.5rem;
-        border-radius: 0.5rem 0.5rem 1rem 1rem;
+        border-radius: 1rem;
         overflow: hidden;
 
         background-color: #202126;
