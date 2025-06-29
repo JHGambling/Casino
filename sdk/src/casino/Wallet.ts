@@ -22,6 +22,10 @@ export class Wallet {
         walletData: WalletModel,
     ) {
         this.store = createStore<WalletModel>(walletData);
+
+        client.db.subscribeTable("wallets", (rec) => {
+            this.store.set(rec.data);
+        });
     }
 
     /**

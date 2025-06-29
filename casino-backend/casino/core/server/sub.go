@@ -12,13 +12,13 @@ type DBSubscription struct {
 }
 
 type SubscriptionManager struct {
-	ctx                   GatewayContext
+	gateway               *Gateway
 	ChangedRecordsChannel chan protocol.SubChangedRecord
 }
 
-func NewSubscriptionsManager(ctx GatewayContext) *SubscriptionManager {
+func NewSubscriptionsManager(gateway *Gateway) *SubscriptionManager {
 	return &SubscriptionManager{
-		ctx:                   ctx,
+		gateway:               gateway,
 		ChangedRecordsChannel: make(chan protocol.SubChangedRecord, 256),
 	}
 }
@@ -35,7 +35,7 @@ func (sub *SubscriptionManager) Update() {
 func (sub *SubscriptionManager) handleChangedRecord(rec protocol.SubChangedRecord) {
 	utils.Log("debug", "casino::server", "[sub] op:'", rec.Operation, "' table:'", rec.TableID, "' resource:'", rec.ResourceID, "'")
 
-	for _, client := range sub.ctx.Gateway.Clients {
+	for _, client := range sub.gateway.Clients {
 		for _, subscription := range client.Subscriptions {
 			isSubscribed := sub.isSubscribed(subscription, rec)
 			if isSubscribed {
@@ -57,7 +57,7 @@ func (sub *SubscriptionManager) isSubscribed(subscription DBSubscription, record
 		return false
 	}
 
-	if subscription.ResourceID == 0 {
+	if isZero(subscription.ResourceID) {
 		// No specific record is being watched, so we are interested in the
 		// entire table -> the record matches all requirements
 		return true
@@ -68,13 +68,13 @@ func (sub *SubscriptionManager) isSubscribed(subscription DBSubscription, record
 }
 
 func (sub *SubscriptionManager) canViewRecord(userID uint, record protocol.SubChangedRecord) bool {
-	user, err := sub.ctx.Database.GetUserTable().FindByID(userID)
+	user, err := sub.gateway.ctx.Database.GetUserTable().FindByID(userID)
 	if err != nil {
 		utils.Log("warn", "casino::server", "[sub] canViewRecord() failed to find user with ID:", userID)
 		return false
 	}
 
-	table, err := sub.ctx.Database.GetTable(record.TableID)
+	table, err := sub.gateway.ctx.Database.GetTable(record.TableID)
 	if err != nil {
 		utils.Log("warn", "casino::server", "[sub] canViewRecord() failed to find table with ID:", record.TableID)
 		return false
@@ -87,4 +87,19 @@ func (sub *SubscriptionManager) canViewRecord(userID uint, record protocol.SubCh
 	}
 
 	return table.CanViewChangedRecord(*userModel, record)
+}
+
+func isZero(val interface{}) bool {
+	switch v := val.(type) {
+	case int:
+		return v == 0
+	case int64:
+		return v == 0
+	case float64:
+		return v == 0
+	case uint:
+		return v == 0
+	default:
+		return false
+	}
 }

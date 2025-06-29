@@ -29,7 +29,7 @@ func NewGatewayClient(addr string, ctx GatewayContext) *GatewayClient {
 		IncomingChan: make(chan []byte, 100),
 		OutgoingChan: make(chan []byte, 100),
 
-		Subscriptions: make([]DBSubscription, 128),
+		Subscriptions: []DBSubscription{},
 	}
 
 	client.handlerContext = HandlerContext{
@@ -155,7 +155,7 @@ func (gc *GatewayClient) SendSubscriptionUpdatePacket(record protocol.SubChanged
 			ResourceID: record.ResourceID,
 			Data:       record.Record,
 		},
-		nonce); err == nil {
+		0); err == nil {
 		gc.Send(res)
 	}
 }

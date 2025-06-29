@@ -4,6 +4,7 @@ import { Database } from "./db";
 import { UserTable } from "./db/UserTable";
 import { WalletTable } from "./db/WalletTable";
 import { ClientEvent } from "./types/events";
+import { WebsocketPacket } from "./types/packet";
 import { ConnectionEvent, ConnectionStatus } from "./types/ws";
 import { WebSocketClient } from "./websocket";
 
@@ -42,6 +43,10 @@ export class CasinoClient {
         this.socket.on(ConnectionEvent.DISCONNECTED, () => {
             this.onDisconnect();
             this.emit(ClientEvent.DISCONNECT);
+        });
+
+        this.socket.on(ConnectionEvent.MESSAGE, (packet: WebsocketPacket) => {
+            this.handlePacket(packet);
         });
 
         this.auth = new Auth(
@@ -92,6 +97,8 @@ export class CasinoClient {
                 }
             }
         }
+
+        this.db.resendSubscriptions();
     }
 
     private async onDisconnect() {
@@ -147,6 +154,16 @@ export class CasinoClient {
             } catch (error) {
                 console.error(`Error in event listener for ${event}:`, error);
             }
+        }
+    }
+
+    private handlePacket(packet: WebsocketPacket) {
+        switch (packet.type) {
+            case "db/sub:update":
+                this.db.handleSubUpdatePacket(packet.payload);
+                break;
+            default:
+                break;
         }
     }
 }

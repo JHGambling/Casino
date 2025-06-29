@@ -36,11 +36,11 @@ export type AuthAuthenticateResponsePacket = ResponsePacket & {
 
 export type DoesUserExistPacket = {
     username: string;
-}
+};
 
 export type DoesUserExistResponsePacket = ResponsePacket & {
     userExists: boolean;
-}
+};
 
 export type DatabaseOperationPacket = {
     operation: string;
@@ -54,4 +54,18 @@ export type DatabaseOperationResponsePacket = {
     result: any;
     err: any;
     exec_time_us: number;
+};
+
+// Database subscribe
+export type DatabaseSubscribePacket = {
+    operation: string;
+    tableID: string;
+    resourceID: number;
+};
+
+export type DatabaseSubUpdatePacket = {
+    tableID: string;
+    resourceID: any;
+    op: string;
+    data: any;
 };

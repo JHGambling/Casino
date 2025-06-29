@@ -17,11 +17,11 @@ type Gateway struct {
 
 func NewGateway(ctx GatewayContext) *Gateway {
 	gw := &Gateway{
-		Clients:       make(map[string]*GatewayClient),
-		Subscriptions: NewSubscriptionsManager(ctx),
-		ctx:           ctx,
+		Clients: make(map[string]*GatewayClient),
+		ctx:     ctx,
 	}
 
+	gw.Subscriptions = NewSubscriptionsManager(gw)
 	gw.ctx.Gateway = gw
 
 	return gw
