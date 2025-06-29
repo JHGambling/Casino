@@ -11,14 +11,18 @@
     let client: CasinoClient = new CasinoClient(WS_URL);
 
     onMount(async () => {
+        console.log(localStorage.getItem("casino-token"));
+
         // Listen for auth events
         client.on(ClientEvent.AUTH_FAIL, () => {
+            console.log("## AUTH_FAIL ## 1");
             goto("/user/login");
         });
 
         await client.connect();
 
         if (!client.auth.isAuthenticated) {
+            console.log("## AUTH_FAIL ## 2");
             goto("/user/login");
         }
     });

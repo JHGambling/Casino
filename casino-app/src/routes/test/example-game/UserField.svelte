@@ -4,8 +4,6 @@
 
     let user = client.casino.user.store;
     let isAuthenticated = client.casino.isAuthenticatedStore;
-
-    $: console.log("hehe:", $user, $isAuthenticated);
 </script>
 
 <div class="field">

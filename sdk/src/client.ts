@@ -96,10 +96,8 @@ export class CasinoClient {
 
     private async onDisconnect() {
         const wasAuthenticated = this.auth.isAuthenticated;
-        this.auth.revokeAuth();
-        if (wasAuthenticated) {
-            this.emit(ClientEvent.AUTH_REVOKED);
-        }
+        //this.auth.revokeAuth();
+        this.auth.isAuthenticated = false;
     }
 
     private async waitForConnect() {

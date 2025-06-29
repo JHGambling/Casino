@@ -137,6 +137,7 @@ export class Auth {
     }
 
     public revokeAuth() {
+        console.log("Revoking auth");
         if (this.isAuthenticated) {
             this.user = null;
             this.isAuthenticated = false;
