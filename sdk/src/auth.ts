@@ -12,6 +12,11 @@ import {
     DoesUserExistResponsePacket,
 } from "./types/packets";
 
+export type AuthOptions = {
+    enableAuthFromLocalStorage?: boolean;
+    clientType?: string; // Default to "app"    
+}
+
 export class Auth {
     public isAuthenticated: boolean = false;
     public authenticatedAs: number = 0;
@@ -23,11 +28,11 @@ export class Auth {
 
     constructor(
         private client: CasinoClient,
-        private enableAuthFromLocalStorage: boolean = true,
+        private options: AuthOptions = {},
     ) {}
 
     public async authFromLocalStorage(): Promise<boolean> {
-        if (!this.enableAuthFromLocalStorage) return false;
+        if (!this.options.enableAuthFromLocalStorage) return false;
 
         let token = localStorage.getItem("casino-token");
         if (token) {
@@ -63,7 +68,7 @@ export class Auth {
             };
         }
 
-        const authSuccess = await this.authenticate(response.token || "");
+        const authSuccess = await this.authenticate(response.token || "", this.options.clientType || "app");
         return {
             success: authSuccess,
             userAlreadyTaken: false,
@@ -101,10 +106,11 @@ export class Auth {
         };
     }
 
-    public async authenticate(token: string): Promise<boolean> {
+    public async authenticate(token: string, clientType: string = "app"): Promise<boolean> {
         const response = (
             await this.client.socket.request("auth/authenticate", {
                 token,
+                clientType
             } as AuthAuthenticatePacket)
         ).payload as AuthAuthenticateResponsePacket;
 
@@ -112,7 +118,7 @@ export class Auth {
             this.isAuthenticated = true;
             this.authenticatedAs = response.userID;
             this.authenticationExpiresAt = new Date(response.expiresAt);
-            if (this.enableAuthFromLocalStorage)
+            if (this.options.enableAuthFromLocalStorage)
                 localStorage.setItem("casino-token", token);
 
             this.user = await this.fetchUser();

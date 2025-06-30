@@ -11,6 +11,7 @@ import { WebSocketClient } from "./websocket";
 export type CasinoClientOptions = {
     authenticateFromLocalStorage?: boolean;
     token?: string;
+    clientType?: string;
 };
 
 export class CasinoClient {
@@ -55,9 +56,13 @@ export class CasinoClient {
 
         this.auth = new Auth(
             this,
-            typeof options?.authenticateFromLocalStorage === "boolean"
-                ? options.authenticateFromLocalStorage
-                : true,
+            {
+                clientType: this.options?.clientType,
+                enableAuthFromLocalStorage: 
+                    typeof options?.authenticateFromLocalStorage === "boolean"
+                    ? options.authenticateFromLocalStorage
+                    : true
+            },
         );
         this.db = new Database(this);
         this.users = new UserTable(this);

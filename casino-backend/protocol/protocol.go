@@ -5,6 +5,8 @@ type GameProvider interface {
 	GetID() string
 	// Returns a displayable name for the game
 	GetName() string
+	// Get all running game instances
+	GetInstances() []GameInstance
 }
 
 type GameInstance interface {
@@ -12,4 +14,13 @@ type GameInstance interface {
 	GetID() string
 	// Returns the ID of the GameProvider this game belongs to
 	GetProviderID() string
+
+	UserJoin(userID string)
+	UserLeave(userID string)
+	GetUsers() []GameUserAssociation
+}
+
+type GameUserAssociation struct {
+	UserID string `json:"user_id"`
+	GameID string `json:"game_id"` // ID of the game instance
 }

@@ -33,6 +33,7 @@ type AuthLoginResponsePacket struct {
 // User authenticate
 type AuthAuthenticatePacket struct {
 	Token string `json:"token"`
+	ClientType string `json:"clientType"`
 }
 type AuthAuthenticateResponsePacket struct {
 	ResponsePacket

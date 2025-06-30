@@ -27,6 +27,7 @@ export type AuthLoginResponsePacket = ResponsePacket & {
 
 export type AuthAuthenticatePacket = {
     token: string;
+    clientType: string;
 };
 
 export type AuthAuthenticateResponsePacket = ResponsePacket & {

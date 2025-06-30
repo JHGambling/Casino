@@ -15,6 +15,7 @@ type GatewayClient struct {
 
 	handlerContext HandlerContext
 
+	clientType string // Type of client (e.g. "app", "game-sdk")
 	isAuthenticated         bool
 	authenticatedAs         uint
 	authenticationExpriesAt time.Time
@@ -158,4 +159,8 @@ func (gc *GatewayClient) SendSubscriptionUpdatePacket(record protocol.SubChanged
 		0); err == nil {
 		gc.Send(res)
 	}
+}
+
+func (gc *GatewayClient) GetClientType() string {
+	return gc.clientType
 }

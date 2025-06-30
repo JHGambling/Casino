@@ -11,6 +11,7 @@
     let client: CasinoClient = new CasinoClient(WS_URL, {
         authenticateFromLocalStorage: false,
         token: $page.data.token,
+        clientType: "game-sdk"
     });
 
     onMount(async () => {

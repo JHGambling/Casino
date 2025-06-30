@@ -100,7 +100,8 @@ func (packet *AuthAuthenticatePacket) Handle(wsPacket WebsocketPacket, ctx *Hand
 
 	if valid {
 		ctx.Client.Authenticate(userID, expiresAt)
-		utils.Log("debug", "casino::gateway", "[Auth] user ", userID, " has been authenticated")
+		ctx.Client.clientType = packet.ClientType;
+		utils.Log("debug", "casino::gateway", "[Auth] user ", userID, " has been authenticated with type '", packet.ClientType, "'")
 		// Send response
 		if res, err := BuildPacket("auth/authenticate:res",
 			AuthAuthenticateResponsePacket{
