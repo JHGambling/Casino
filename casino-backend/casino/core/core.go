@@ -5,6 +5,7 @@ import (
 	"jhgambling/backend/core/data"
 	"jhgambling/backend/core/plugins"
 	"jhgambling/backend/core/server"
+	"jhgambling/backend/core/game"
 	"jhgambling/backend/core/utils"
 	"os"
 	"time"
@@ -16,16 +17,19 @@ type CasinoCore struct {
 	Gateway  *server.Gateway
 	Auth     *auth.AuthManager
 	Plugins  *plugins.PluginManager
+	Games 	 *game.GameManager
 }
 
 func NewCasino() *CasinoCore {
 	db := data.NewDatabase()
 	auth := auth.NewAuthManager()
 	plugins := plugins.NewPluginManager()
+	games := game.NewGameManager()
 
 	ctx := server.GatewayContext{
 		Database: db,
 		Auth:     auth,
+		Games: 	  games,
 	}
 	gateway := server.NewGateway(ctx)
 
@@ -35,6 +39,7 @@ func NewCasino() *CasinoCore {
 		Server:   server.NewServer(gateway),
 		Auth:     auth,
 		Plugins:  plugins,
+		Games:    games,
 	}
 
 	return &casino
