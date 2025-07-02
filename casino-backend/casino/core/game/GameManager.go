@@ -1,9 +1,13 @@
 package game
 
-import "jhgambling/protocol"
+import (
+	"jhgambling/backend/core/utils"
+	"jhgambling/protocol"
+)
 
 type GameManager struct {
 	GameProviders []protocol.GameProvider
+	Adapter       protocol.CasinoAdapter
 }
 
 func NewGameManager() *GameManager {
@@ -12,9 +16,15 @@ func NewGameManager() *GameManager {
 	}
 }
 
+func (gm *GameManager) SetAdapter(adapter protocol.CasinoAdapter) {
+	gm.Adapter = adapter
+}
+
 // RegisterProvider adds a new game provider to the manager.
 func (gm *GameManager) RegisterProvider(provider protocol.GameProvider) {
 	gm.GameProviders = append(gm.GameProviders, provider)
+
+	utils.Log("ok", "casino::games", "registered game provider '", provider.GetID(), "' ('", provider.GetName(), "')")
 }
 
 // GetProviderByID retrieves a game provider by its unique ID.

@@ -10,9 +10,9 @@
 
     let client: CasinoClient = new CasinoClient(WS_URL);
 
-    onMount(async () => {
-        console.log(localStorage.getItem("casino-token"));
+    let isInGameScreen = true;
 
+    onMount(async () => {
         // Listen for auth events
         client.on(ClientEvent.AUTH_FAIL, () => {
             console.log("## AUTH_FAIL ## 1");
@@ -34,9 +34,13 @@
 
 <div class="app">
     <LoadingOverlay {client} />
-    <TopBar {client} />
+    <TopBar {client} showExitButton={isInGameScreen} />
 
-    <GamePage {client} />
+    {#if isInGameScreen}
+        <GamePage {client} />
+    {:else}
+        <ListPage />
+    {/if}
 </div>
 
 <style lang="scss">

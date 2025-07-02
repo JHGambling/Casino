@@ -15,9 +15,26 @@ type GameInstance interface {
 	// Returns the ID of the GameProvider this game belongs to
 	GetProviderID() string
 
+	//// Backend Interaction ////
+
+	SetAdapter(adapter CasinoAdapter)
+	GetAdapter() CasinoAdapter
+
+	//// User Management ////
+
 	UserJoin(userID string)
 	UserLeave(userID string)
 	GetUsers() []GameUserAssociation
+
+	//// Client Packets ////
+
+	HandleClientJoin(client GameClient)
+	HandleClientLeave(clientID string)
+	HandlePacket(packet GamePacket)
+
+	//// Game Loop ////
+
+	Tick()
 }
 
 type GameUserAssociation struct {

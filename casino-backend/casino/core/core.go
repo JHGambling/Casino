@@ -3,9 +3,9 @@ package core
 import (
 	"jhgambling/backend/core/auth"
 	"jhgambling/backend/core/data"
+	"jhgambling/backend/core/game"
 	"jhgambling/backend/core/plugins"
 	"jhgambling/backend/core/server"
-	"jhgambling/backend/core/game"
 	"jhgambling/backend/core/utils"
 	"os"
 	"time"
@@ -17,7 +17,9 @@ type CasinoCore struct {
 	Gateway  *server.Gateway
 	Auth     *auth.AuthManager
 	Plugins  *plugins.PluginManager
-	Games 	 *game.GameManager
+	Games    *game.GameManager
+
+	Adapter *CasinoPluginAdapter
 }
 
 func NewCasino() *CasinoCore {
@@ -29,11 +31,11 @@ func NewCasino() *CasinoCore {
 	ctx := server.GatewayContext{
 		Database: db,
 		Auth:     auth,
-		Games: 	  games,
+		Games:    games,
 	}
 	gateway := server.NewGateway(ctx)
 
-	casino := CasinoCore{
+	casino := &CasinoCore{
 		Database: db,
 		Gateway:  gateway,
 		Server:   server.NewServer(gateway),
@@ -42,13 +44,19 @@ func NewCasino() *CasinoCore {
 		Games:    games,
 	}
 
-	return &casino
+	adapter := NewCasinoPluginAdapter(casino)
+	casino.Adapter = adapter
+
+	return casino
 }
 
 func (c *CasinoCore) Init() {
 	utils.Log("info", "casino::core", "initializing...")
+
+	// plugins
 	c.Plugins.LoadPlugins()
 
+	// Database
 	env := os.Getenv("ENV")
 	dbPath := ""
 	if env == "production" {
@@ -59,6 +67,10 @@ func (c *CasinoCore) Init() {
 	c.Database.Connect(dbPath)
 	c.Database.Migrate()
 	c.Database.SetSubscriptionChannel(&c.Gateway.Subscriptions.ChangedRecordsChannel)
+
+	// Game integration
+	c.Games.SetAdapter(c.Adapter)
+	c.registerGameProviders()
 }
 
 func (c *CasinoCore) Start() {
@@ -68,5 +80,11 @@ func (c *CasinoCore) Start() {
 	for {
 		c.Gateway.Subscriptions.Update()
 		time.Sleep(time.Millisecond * 10)
+	}
+}
+
+func (c *CasinoCore) registerGameProviders() {
+	for _, p := range c.Plugins.GameProviders {
+		c.Games.RegisterProvider(p)
 	}
 }

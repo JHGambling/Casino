@@ -3,13 +3,32 @@
 </script>
 
 <div class="games-container">
-    <GameCard name="Slotty" imageUrl="/assets/images/slot_example_image.webp" />
     <GameCard
-        name="Blackjack"
+        name="Slotty 1"
+        imageUrl="/assets/images/slot_example_image.webp"
+    />
+    <GameCard
+        name="Slotty 2"
+        imageUrl="/assets/images/slot_example_image.webp"
+    />
+    <GameCard
+        name="Slotty 3"
+        imageUrl="/assets/images/slot_example_image.webp"
+    />
+    <GameCard
+        name="Slotty 4"
+        imageUrl="/assets/images/slot_example_image.webp"
+    />
+    <GameCard
+        name="Blackjack Tisch 1"
         imageUrl="/assets/images/blackjack_example_image.webp"
     />
     <GameCard
-        name="Rolly Roulette"
+        name="Rolly Roulette 1"
+        imageUrl="/assets/images/roulette_example_image.png"
+    />
+    <GameCard
+        name="Rolly Roulette 2"
         imageUrl="/assets/images/roulette_example_image.png"
     />
     <GameCard

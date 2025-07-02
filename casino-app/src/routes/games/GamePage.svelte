@@ -3,14 +3,15 @@
     export let client: CasinoClient;
 
     let isAuthenticated = client.casino.isAuthenticatedStore;
+
+    export let gameURL: string = "http://localhost:5173/test/example-game";
 </script>
 
 <div class="game-page">
     <div class="game">
         {#if $isAuthenticated}
             <iframe
-                src="http://localhost:5173/test/example-game?token={client.auth
-                    .usedToken}"
+                src="{gameURL}?token={client.auth.usedToken}"
                 title="Game"
                 frameborder="0"
             ></iframe>

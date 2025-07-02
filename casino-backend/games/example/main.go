@@ -10,5 +10,8 @@ func (p *ExampleProvider) GetID() string {
 func (p *ExampleProvider) GetName() string {
 	return "Example Provider"
 }
+func (p *ExampleProvider) GetInstances() []protocol.GameInstance {
+	return []protocol.GameInstance{}
+}
 
 var Provider protocol.GameProvider = &ExampleProvider{}

@@ -12,14 +12,19 @@ import (
 )
 
 type PluginManager struct {
+	GameProviders []protocol.GameProvider
 }
 
 func NewPluginManager() *PluginManager {
-	return &PluginManager{}
+	return &PluginManager{
+		GameProviders: []protocol.GameProvider{},
+	}
 }
 
 func (pm *PluginManager) LoadPlugins() {
 	files := pm.ListAvailablePlugins()
+
+	pm.GameProviders = []protocol.GameProvider{}
 
 	for _, f := range files {
 		provider, err := pm.LoadGamePlugin(f)
@@ -28,6 +33,7 @@ func (pm *PluginManager) LoadPlugins() {
 			continue
 		}
 
+		pm.GameProviders = append(pm.GameProviders, provider)
 		utils.Log("ok", "casino::plugins", "loaded plugin '", provider.GetID(), "' with name '", provider.GetName(), "'")
 	}
 }

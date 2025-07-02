@@ -4,6 +4,7 @@
     import { slide } from "svelte/transition";
 
     export let client: CasinoClient;
+    export let showExitButton = true;
     let showDropdown = false;
 
     let user = client.casino.user.store;
@@ -31,6 +32,9 @@
 
 <div class="topbar">
     <div class="right tb-section">
+        {#if showExitButton}
+            <button>⬅️ Exit</button>
+        {/if}
         <img src="/logo.png" alt="" class="logo" />
         <div class="title">JHGambling</div>
     </div>
@@ -103,6 +107,28 @@
             font-size: var(--text-heading-size);
             font-weight: var(--text-heading-weight);
             color: #ffffff;
+        }
+
+        button {
+            height: 2.5rem;
+
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0rem 1rem;
+            background: #202126;
+            border: none;
+            border-radius: 0.5rem;
+            color: white;
+            cursor: pointer;
+
+            &:hover {
+                background: #292a30;
+            }
+
+            font-family: var(--text-main-family);
+            font-size: var(--text-main-size);
+            font-weight: var(--text-main-weight);
         }
     }
 
