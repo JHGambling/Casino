@@ -1,17 +1,19 @@
 <script lang="ts">
     import type { CasinoClient } from "casino-sdk";
+    import { WS_URL } from "$lib/config";
     export let client: CasinoClient;
 
     let isAuthenticated = client.casino.isAuthenticatedStore;
 
-    export let gameURL: string = "http://localhost:5173/test/example-game";
+    //export let gameURL: string = "https://jhgambling.github.io/slotty/";
+    export let gameURL: string = "http://localhost:4173/index.html";
 </script>
 
 <div class="game-page">
     <div class="game">
         {#if $isAuthenticated}
             <iframe
-                src="{gameURL}?token={client.auth.usedToken}"
+                src="{gameURL}?token={client.auth.usedToken}&wsUrl={WS_URL}"
                 title="Game"
                 frameborder="0"
             ></iframe>
