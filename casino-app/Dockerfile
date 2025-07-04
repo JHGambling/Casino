@@ -1,31 +1,16 @@
-# Casino/casino-app/Dockerfile
-FROM node:18 AS build
-
-# Set working directory
+FROM node:18-alpine AS builder
 WORKDIR /app
-
-# Copy package files and install dependencies
-COPY package.json svelte.config.js playwright.config.ts ./
-COPY src ./src
-COPY static ./static
-
-RUN npm install
+COPY package*.json .
+RUN npm ci
+COPY . .
 RUN npm run build
+RUN npm prune --production
 
-# Use Node.js to serve the built app
-FROM node:18 AS production
-
-# Set working directory
+FROM node:18-alpine
 WORKDIR /app
-
-# Copy built files and dependencies
-COPY --from=build /app/build ./build
-COPY package.json ./
-
-RUN npm install --production
-
-# Expose port 3000
+COPY --from=builder /app/build build/
+COPY --from=builder /app/node_modules node_modules/
+COPY package.json .
 EXPOSE 3000
-
-# Start the app
-CMD ["node", "build"]
+ENV NODE_ENV=production
+CMD [ "node", "build" ]
