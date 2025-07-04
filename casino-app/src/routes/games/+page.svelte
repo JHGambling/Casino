@@ -13,6 +13,11 @@
     let isInGameScreen = false;
     let selectedGame = "";
 
+    const gameMap: { [key: string]: string } = {
+        slotty: "https://casino-slotty.stmbl.dev",
+        blackjack: "https://casino-blackjack.stmbl.dev",
+    };
+
     onMount(async () => {
         // Listen for auth events
         client.on(ClientEvent.AUTH_FAIL, () => {
@@ -42,7 +47,7 @@
     />
 
     {#if isInGameScreen}
-        <GamePage {client} />
+        <GamePage {client} gameURL={gameMap[selectedGame] || ""} />
     {:else}
         <ListPage
             on:select={(e) => {
