@@ -10,7 +10,8 @@
 
     let client: CasinoClient = new CasinoClient(WS_URL);
 
-    let isInGameScreen = true;
+    let isInGameScreen = false;
+    let selectedGame = "";
 
     onMount(async () => {
         // Listen for auth events
@@ -34,12 +35,21 @@
 
 <div class="app">
     <LoadingOverlay {client} />
-    <TopBar {client} showExitButton={isInGameScreen} />
+    <TopBar
+        {client}
+        showExitButton={isInGameScreen}
+        on:exit={() => (isInGameScreen = false)}
+    />
 
     {#if isInGameScreen}
         <GamePage {client} />
     {:else}
-        <ListPage />
+        <ListPage
+            on:select={(e) => {
+                selectedGame = e.detail.id;
+                isInGameScreen = true;
+            }}
+        />
     {/if}
 </div>
 

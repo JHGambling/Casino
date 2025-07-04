@@ -1,39 +1,39 @@
 <script lang="ts">
+    import { createEventDispatcher } from "svelte";
     import GameCard from "./GameCard.svelte";
+
+    let dispatch = createEventDispatcher();
+
+    function selectGame(id: string) {
+        dispatch("select", { id });
+    }
 </script>
 
 <div class="games-container">
     <GameCard
-        name="Slotty 1"
+        name="Slotty"
         imageUrl="/assets/images/slot_example_image.webp"
+        on:gameSelected={() => selectGame("slotty")}
     />
     <GameCard
-        name="Slotty 2"
-        imageUrl="/assets/images/slot_example_image.webp"
-    />
-    <GameCard
-        name="Slotty 3"
-        imageUrl="/assets/images/slot_example_image.webp"
-    />
-    <GameCard
-        name="Slotty 4"
-        imageUrl="/assets/images/slot_example_image.webp"
-    />
-    <GameCard
-        name="Blackjack Tisch 1"
+        name="Blackjack"
         imageUrl="/assets/images/blackjack_example_image.webp"
+        on:gameSelected={() => selectGame("blackjack")}
     />
     <GameCard
-        name="Rolly Roulette 1"
+        name="Rolly Roulette"
         imageUrl="/assets/images/roulette_example_image.png"
+        on:gameSelected={() => selectGame("rolly")}
     />
     <GameCard
-        name="Rolly Roulette 2"
-        imageUrl="/assets/images/roulette_example_image.png"
+        name="Catchfish"
+        imageUrl="/assets/images/russian_roulette_example_image.webp"
+        on:gameSelected={() => selectGame("catchfish")}
     />
     <GameCard
         name="Russisch Roulette"
         imageUrl="/assets/images/russian_roulette_example_image.webp"
+        on:gameSelected={() => selectGame("russian_roulette")}
     />
 </div>
 

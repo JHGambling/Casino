@@ -6,7 +6,8 @@
     let isAuthenticated = client.casino.isAuthenticatedStore;
 
     //export let gameURL: string = "https://jhgambling.github.io/slotty/";
-    export let gameURL: string = "http://localhost:4173/index.html";
+    //export let gameURL: string = "http://localhost:4173/index.html";
+    export let gameURL: string = "http://localhost:5174/index.html";
 </script>
 
 <div class="game-page">

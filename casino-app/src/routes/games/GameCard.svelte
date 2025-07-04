@@ -1,9 +1,23 @@
 <script lang="ts">
+    import { createEventDispatcher } from "svelte";
+
     export let name: string;
     export let imageUrl: string;
+
+    let dispatch = createEventDispatcher();
+
+    function handleClick() {
+        dispatch("gameSelected", {});
+    }
 </script>
 
-<div class="game-card" style:background-image="url('{imageUrl}')">
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div
+    class="game-card"
+    style:background-image="url('{imageUrl}')"
+    on:click={handleClick}
+>
     <div class="info-bar">
         <span>{name}</span>
     </div>

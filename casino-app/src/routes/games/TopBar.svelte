@@ -2,10 +2,13 @@
     import { CasinoClient } from "casino-sdk";
     import { goto } from "$app/navigation";
     import { slide } from "svelte/transition";
+    import { createEventDispatcher } from "svelte";
 
     export let client: CasinoClient;
-    export let showExitButton = true;
     let showDropdown = false;
+
+    export let showExitButton = true;
+    let dispatch = createEventDispatcher();
 
     let user = client.casino.user.store;
     let wallet = client.casino.wallet.store;
@@ -33,7 +36,7 @@
 <div class="topbar">
     <div class="right tb-section">
         {#if showExitButton}
-            <button>⬅️ Exit</button>
+            <button on:click={() => dispatch("exit")}>⬅️ Exit</button>
         {/if}
         <img src="/logo.png" alt="" class="logo" />
         <div class="title">JHGambling</div>
