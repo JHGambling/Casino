@@ -111,6 +111,7 @@
     }
 
     async function onUsernameInput() {
+        username = username.toLowerCase();
         validateUsername(false);
 
         if (username && username.length >= 3) {
@@ -144,10 +145,10 @@
             return false;
         }
 
-        if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+        if (!/^[a-z0-9_]+$/.test(username)) {
             if (showError)
                 usernameError =
-                    "Der Nutzername darf nur Buchstaben, Zahlen und Unterstriche enthalten.";
+                    "Der Nutzername darf nur Kleinbuchstaben, Zahlen und Unterstriche enthalten.";
             return false;
         }
 
@@ -176,7 +177,7 @@
         // Check if the username is valid (e.g., not empty, no special characters)
         return (
             username &&
-            /^[a-zA-Z0-9_]+$/.test(username) &&
+            /^[a-z0-9_]+$/.test(username) &&
             username.length >= 3 &&
             username.length <= 20
         );

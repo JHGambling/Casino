@@ -15,10 +15,11 @@ type GatewayClient struct {
 
 	handlerContext HandlerContext
 
-	clientType string // Type of client (e.g. "app", "game-sdk")
+	clientType              string // Type of client (e.g. "app", "game-sdk")
 	isAuthenticated         bool
 	authenticatedAs         uint
 	authenticationExpriesAt time.Time
+	session                 uint
 
 	Subscriptions []DBSubscription
 }
@@ -106,6 +107,12 @@ func (gc *GatewayClient) handleIncomingPacket(packet WebsocketPacket) {
 			gc.Send(res)
 		}
 		break
+	case "client/set_session":
+		var payload SetSessionPacket
+		if gc.unmarshalPayload(packet.Payload, &payload) {
+			payload.Handle(packet, &gc.handlerContext)
+		}
+		break
 	default:
 		utils.Log("warn", "casino::gateway", "unknown packet type: ", packet.Type)
 		return
@@ -163,4 +170,12 @@ func (gc *GatewayClient) SendSubscriptionUpdatePacket(record protocol.SubChanged
 
 func (gc *GatewayClient) GetClientType() string {
 	return gc.clientType
+}
+
+func (gc *GatewayClient) SetSession(session uint) {
+	gc.session = session
+}
+
+func (gc *GatewayClient) GetSession() uint {
+	return gc.session
 }

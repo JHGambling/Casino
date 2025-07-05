@@ -100,7 +100,7 @@ func (packet *AuthAuthenticatePacket) Handle(wsPacket WebsocketPacket, ctx *Hand
 
 	if valid {
 		ctx.Client.Authenticate(userID, expiresAt)
-		ctx.Client.clientType = packet.ClientType;
+		ctx.Client.clientType = packet.ClientType
 		utils.Log("debug", "casino::gateway", "[Auth] user ", userID, " has been authenticated with type '", packet.ClientType, "'")
 		// Send response
 		if res, err := BuildPacket("auth/authenticate:res",
@@ -271,5 +271,21 @@ func (packet *DatabaseSubscribePacket) Handle(wsPacket WebsocketPacket, ctx *Han
 		}
 	} else {
 		utils.Log("warn", "casino::gateway", "[db/sub] user ", ctx.Client.authenticatedAs, " tried to perform unkown db/sub operation: ", packet.Operation)
+	}
+}
+
+func (packet *SetSessionPacket) Handle(wsPacket WebsocketPacket, ctx *HandlerContext) {
+	ctx.Client.SetSession(packet.SessionID)
+}
+
+func (packet *GameFinishedLoadingPacket) Handle(wsPacket WebsocketPacket, ctx *HandlerContext) {
+	for _, c := range ctx.Gateway.Clients {
+		if c.GetSession() == packet.SessionID {
+			// Client is part of the same session, so we can send the
+			// finished loading packet to the client
+			if res, err := BuildPacket("game/finished_loading", packet, wsPacket.Nonce); err == nil {
+				c.Send(res)
+			}
+		}
 	}
 }

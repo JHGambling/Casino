@@ -80,3 +80,12 @@ type DatabaseSubUpdatePacket struct {
 	Operation string      `json:"op"`
 	Data      interface{} `json:"data"`
 }
+
+// Session
+type SetSessionPacket struct {
+	SessionID uint `json:"sessionID"`
+}
+
+type GameFinishedLoadingPacket struct {
+	SessionID uint `json:"sessionID"`
+}
