@@ -103,23 +103,47 @@ func (t *WalletTable) UpdateAsUser(user models.UserModel, id interface{}, data i
 		return errors.New("permission denied: you can only update your own wallet data")
 	}
 
-	walletData, ok := data.(*models.WalletModel)
-	if !ok {
-		return errors.New("invalid data type: expected *models.WalletModel")
-	}
-
-	// Find existing wallet
+	// Find existing wallet first
 	var existingWallet models.WalletModel
 	if err := t.DB.First(&existingWallet, walletID).Error; err != nil {
 		return err
 	}
 
-	// Preserve starting bonus status if it's true
-	if existingWallet.ReceivedStartingBonus {
-		walletData.ReceivedStartingBonus = true
-	}
+	// Handle different possible input types
+	switch actualData := data.(type) {
+	case *models.WalletModel:
+		// Complete wallet model provided
+		// Preserve starting bonus status if it's true
+		if existingWallet.ReceivedStartingBonus {
+			actualData.ReceivedStartingBonus = true
+		}
+		return t.Update(walletID, actualData)
 
-	return t.Update(walletID, walletData)
+	case map[string]interface{}:
+		// Handle partial updates with map
+		// Make sure we don't override the starting bonus if it's already received
+		if existingWallet.ReceivedStartingBonus {
+			actualData["received_starting_bonus"] = true
+		}
+
+		// Apply the updates directly
+		if err := t.DB.Model(&models.WalletModel{}).Where("id = ?", walletID).Updates(actualData).Error; err != nil {
+			return err
+		}
+
+		// Fetch the updated wallet to push changes
+		var updatedWallet models.WalletModel
+		if err := t.DB.First(&updatedWallet, walletID).Error; err != nil {
+			return err
+		}
+
+		// Push the change notification
+		t.PushRecordChange("update", walletID, &updatedWallet)
+		return nil
+
+	default:
+		return errors.New("invalid data type: expected *models.WalletModel or map[string]interface{}")
+	}
 }
 
 // DeleteAsUser removes a wallet with permission check
@@ -134,13 +158,20 @@ func (t *WalletTable) DeleteAsUser(user models.UserModel, id interface{}) error 
 
 // Update updates a wallet and triggers notifications
 func (t *WalletTable) Update(id interface{}, data interface{}) error {
-	walletData, ok := data.(*models.WalletModel)
-	if !ok {
-		return errors.New("invalid data type: expected *models.WalletModel")
+	var err error
+
+	// Handle different data types for updates
+	switch actualData := data.(type) {
+	case *models.WalletModel:
+		// Update the wallet with complete model
+		err = t.DB.Model(&models.WalletModel{}).Where("id = ?", id).Updates(actualData).Error
+	case map[string]interface{}:
+		// Update with partial data
+		err = t.DB.Model(&models.WalletModel{}).Where("id = ?", id).Updates(actualData).Error
+	default:
+		return errors.New("invalid data type: expected *models.WalletModel or map[string]interface{}")
 	}
 
-	// Update the wallet
-	err := t.DB.Model(&models.WalletModel{}).Where("id = ?", id).Updates(walletData).Error
 	if err != nil {
 		return err
 	}
