@@ -17,6 +17,7 @@
         slotty: "https://casino-slotty.stmbl.dev",
         blackjack: "https://casino-blackjack.stmbl.dev",
         rolly: "https://casino-rolly.stmbl.dev/",
+        catchfishy: "https://casino-catchfishy.stmbl.dev/",
     };
 
     onMount(async () => {

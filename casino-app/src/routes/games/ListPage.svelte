@@ -26,15 +26,15 @@
         on:gameSelected={() => selectGame("rolly")}
     />
     <GameCard
-        name="Catchfish"
-        imageUrl="/assets/images/russian_roulette_example_image.webp"
-        on:gameSelected={() => selectGame("catchfish")}
+        name="CatchFishy"
+        imageUrl="https://i.imgflip.com/91hm6a.jpg"
+        on:gameSelected={() => selectGame("catchfishy")}
     />
-    <GameCard
+    <!--<GameCard
         name="Russisch Roulette"
         imageUrl="/assets/images/russian_roulette_example_image.webp"
         on:gameSelected={() => selectGame("russian_roulette")}
-    />
+    />-->
 </div>
 
 <style lang="scss">
