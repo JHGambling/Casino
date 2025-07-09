@@ -103,7 +103,23 @@ func (t *WalletTable) UpdateAsUser(user models.UserModel, id interface{}, data i
 		return errors.New("permission denied: you can only update your own wallet data")
 	}
 
-	return t.Update(id, data)
+	walletData, ok := data.(*models.WalletModel)
+	if !ok {
+		return errors.New("invalid data type: expected *models.WalletModel")
+	}
+
+	// Find existing wallet
+	var existingWallet models.WalletModel
+	if err := t.DB.First(&existingWallet, walletID).Error; err != nil {
+		return err
+	}
+
+	// Preserve starting bonus status if it's true
+	if existingWallet.ReceivedStartingBonus {
+		walletData.ReceivedStartingBonus = true
+	}
+
+	return t.Update(walletID, walletData)
 }
 
 // DeleteAsUser removes a wallet with permission check
@@ -114,4 +130,29 @@ func (t *WalletTable) DeleteAsUser(user models.UserModel, id interface{}) error 
 	}
 
 	return t.Delete(id)
+}
+
+// Update updates a wallet and triggers notifications
+func (t *WalletTable) Update(id interface{}, data interface{}) error {
+	walletData, ok := data.(*models.WalletModel)
+	if !ok {
+		return errors.New("invalid data type: expected *models.WalletModel")
+	}
+
+	// Update the wallet
+	err := t.DB.Model(&models.WalletModel{}).Where("id = ?", id).Updates(walletData).Error
+	if err != nil {
+		return err
+	}
+
+	// Fetch the updated wallet to push changes
+	var updatedWallet models.WalletModel
+	if err := t.DB.First(&updatedWallet, id).Error; err != nil {
+		return err
+	}
+
+	// Push the change notification
+	t.PushRecordChange("update", id, &updatedWallet)
+
+	return nil
 }

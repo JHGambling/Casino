@@ -24,7 +24,7 @@
             {/if}
             <iframe
                 src="{gameURL}?token={client.auth
-                    .usedToken}&wsUrl={WS_URL}&session={client.session}"
+                    .usedToken}&wsUrl={WS_URL}&session={client.session}&usesdk=1"
                 title="Game"
                 frameborder="0"
             ></iframe>

@@ -225,6 +225,7 @@ func (t *UserTable) Update(id interface{}, data interface{}) error {
 
 func (t *UserTable) Repair() {
 	t.repair_addWallets()
+	t.repair_addStartingBonus()
 }
 
 func (t *UserTable) repair_addWallets() {
@@ -259,4 +260,35 @@ func (t *UserTable) repair_addWallets() {
 			utils.Log("ok", "casino::data", "[UserTable] [Repair] created wallet for user:", userData.ID)
 		}
 	}
+}
+
+// repair_addStartingBonus gives a starting bonus of $1000 to users who haven't received it yet
+func (t *UserTable) repair_addStartingBonus() {
+	utils.Log("info", "casino::data", "[UserTable] [Repair] checking for users who need starting bonus...")
+
+	// Get all wallets that haven't received the starting bonus
+	var wallets []models.WalletModel
+	result := t.DB.Where("received_starting_bonus = ?", false).Find(&wallets)
+	if result.Error != nil {
+		utils.Log("error", "casino::data", "[UserTable] [Repair] failed to get wallets:", result.Error)
+		return
+	}
+
+	// Process each wallet
+	for _, wallet := range wallets {
+		// Add $1000 in cents (100000 cents)
+		wallet.NetworthCents += 100000
+		wallet.ReceivedStartingBonus = true
+
+		// Update the wallet
+		err := t.DB.Save(&wallet).Error
+		if err != nil {
+			utils.Log("error", "casino::data", "[UserTable] [Repair] failed to update wallet for user:", wallet.UserID, "error:", err)
+			continue
+		}
+
+		utils.Log("ok", "casino::data", "[UserTable] [Repair] added $1000 starting bonus to user:", wallet.UserID)
+	}
+
+	utils.Log("info", "casino::data", "[UserTable] [Repair] finished checking starting bonuses. Added to", len(wallets), "users.")
 }

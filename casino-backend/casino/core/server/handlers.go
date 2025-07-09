@@ -55,6 +55,13 @@ func (packet *AuthRegisterPacket) Handle(wsPacket WebsocketPacket, ctx *HandlerC
 		JoinedAt:     time.Now(),
 	}
 
+	// Create wallet with starting bonus
+	wallet := &models.WalletModel{
+		NetworthCents:         100000, // $1000 in cents
+		ReceivedStartingBonus: true,
+	}
+	user.Wallet = *wallet
+
 	err = ctx.Database.GetUserTable().Create(user)
 	if err != nil {
 		if res, err := BuildPacket("auth/register:res", AuthRegisterResponsePacket{
