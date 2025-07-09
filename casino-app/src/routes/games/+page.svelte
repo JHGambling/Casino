@@ -16,6 +16,7 @@
     const gameMap: { [key: string]: string } = {
         slotty: "https://casino-slotty.stmbl.dev",
         blackjack: "https://casino-blackjack.stmbl.dev",
+        rolly: "https://casino-rolly.stmbl.dev/",
     };
 
     onMount(async () => {
