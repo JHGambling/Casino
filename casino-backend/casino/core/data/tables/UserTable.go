@@ -54,7 +54,7 @@ func (t *UserTable) Create(data interface{}) error {
 		t.PushRecordChange("create", user.ID, toSafeUser(user))
 	}
 
-	return t.DB.Create(user).Error
+	return err
 }
 
 // FindByID finds a user by ID
